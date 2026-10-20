@@ -1,5 +1,7 @@
 # CKA simulator on kind (Apple Silicon / Docker Desktop)
 
+처음이라면 저장소 루트의 [`README.md`](../README.md)에 설치와 매일 쓰는 순서가 있습니다. 이 문서는 명령 참고용입니다. / Start with the repo-root README for setup and the daily flow; this file is the command reference.
+
 Design: `DESIGN.md`. Author docs: `docs/HELPERS.md`. Honest gaps: `docs/KNOWN_LIMITS.md`.
 Prereqs on the Mac: docker (give the VM >= 6 GB), kind, kubectl, helm, jq, python3, internet for the first run.
 
