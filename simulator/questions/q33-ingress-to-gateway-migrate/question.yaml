@@ -1,0 +1,19 @@
+id: q33-ingress-to-gateway-migrate
+title: Migrate an Ingress to the Gateway API
+domain: networking
+weight: 6
+difficulty: medium
+context: k8s
+host: null
+namespace: legacy-ing
+requires: [gateway-api]
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 8
+artifacts: []
+checks_total: 8
+tags: [gateway-api, ingress, httproute, migration]
+concept: ingress+gateway-api
+sub_competency: "Use the Gateway API to manage Ingress traffic; know how to use Ingress resources"
+doc: https://gateway-api.sigs.k8s.io/guides/user-guides/http-routing/

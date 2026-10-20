@@ -1,0 +1,21 @@
+id: q81-ha-external-etcd-config
+title: HA control plane with external etcd (config file, quorum facts, leader lease)
+domain: cluster-architecture
+weight: 5
+difficulty: hard
+context: ek8s
+host: ek8s-cp
+namespace: null
+requires: []
+fidelity: partial   # kind is a single control plane: the HA topology is designed and validated as a file, never built
+destructive: false
+reset: ns
+conflicts: []
+time_hint_min: 11
+artifacts:
+  - path: /opt/cka/ha-external-etcd.yaml
+    on: ek8s-cp
+  - path: /home/candidate/answers/q81.txt
+    on: term
+checks_total: 9
+tags: [ha, external-etcd, kubeadm, quorum, lease, controlPlaneEndpoint]

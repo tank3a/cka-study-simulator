@@ -1,0 +1,18 @@
+id: q103-controller-manager-crash
+title: Deployment creates no ReplicaSet - kube-controller-manager down
+domain: troubleshooting
+sub_competency: Troubleshoot cluster components
+weight: 7
+difficulty: medium
+context: ek8s
+host: ek8s-cp
+namespace: cm-crash
+requires: []
+fidelity: high
+destructive: true
+reset: cluster-soft
+time_hint_min: 10
+conflicts: [q37-kubelet-stopped, q39-apiserver-flags-broken, q40-scheduler-down, q104-controller-manager-disabled, q107-apiserver-authz-keyfile, q108-scheduler-flags-probe]
+artifacts: []
+checks_total: 6
+tags: [control-plane, kube-controller-manager, static-pod, crictl, manifests]

@@ -1,0 +1,18 @@
+id: q21-ha-topology-report
+title: Control plane topology and leader election report
+domain: cluster-architecture
+weight: 4
+difficulty: medium
+context: ek8s
+host: ek8s-cp
+namespace: null
+requires: [etcdctl]
+fidelity: partial   # kind cluster has a single control plane node; the HA concepts are inspected, not built
+destructive: false
+reset: ns
+time_hint_min: 7
+artifacts:
+  - path: /home/candidate/answers/q21.txt
+    on: term
+checks_total: 5
+tags: [ha, etcd, stacked, leader-election, kubeadm-config]

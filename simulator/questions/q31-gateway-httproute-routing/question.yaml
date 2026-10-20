@@ -1,0 +1,19 @@
+id: q31-gateway-httproute-routing
+title: HTTPRoute with path and header rules
+domain: networking
+weight: 7
+difficulty: medium
+context: k8s
+host: null
+namespace: gw-route
+requires: [gateway-api]
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 9
+artifacts: []
+checks_total: 8
+tags: [gateway-api, httproute, path-match, header-match]
+concept: gateway-api
+sub_competency: "Use the Gateway API to manage Ingress traffic"
+doc: https://gateway-api.sigs.k8s.io/guides/user-guides/http-routing/

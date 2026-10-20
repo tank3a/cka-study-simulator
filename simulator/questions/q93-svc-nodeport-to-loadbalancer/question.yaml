@@ -1,0 +1,20 @@
+id: q93-svc-nodeport-to-loadbalancer
+title: Convert a NodePort Service to LoadBalancer in place
+domain: networking
+weight: 5
+difficulty: medium
+context: k8s
+host: null
+namespace: svc-lb2
+requires: []
+fidelity: partial
+destructive: false
+reset: ns
+time_hint_min: 6
+artifacts: []
+checks_total: 7
+tags: [service, loadbalancer, healthchecknodeport, nodeport]
+concept: services
+sub_competency: "Use ClusterIP, NodePort, LoadBalancer service types and endpoints"
+doc: https://kubernetes.io/docs/concepts/services-networking/service/
+note: "kind has no LoadBalancer implementation: EXTERNAL-IP stays pending. API spec and preserved nodePort are graded."

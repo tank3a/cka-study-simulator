@@ -1,0 +1,18 @@
+id: q18-etcd-restore-snapshot
+title: Restore etcd from a snapshot
+domain: cluster-architecture
+weight: 7
+difficulty: hard
+context: ek8s
+host: ek8s-cp
+namespace: etcd-rs
+requires: [etcdctl]
+fidelity: high
+destructive: true
+reset: cluster-soft
+time_hint_min: 12
+artifacts:
+  - path: /var/lib/etcd-restore
+    on: ek8s-cp
+checks_total: 6
+tags: [etcd, restore, static-pod, hostPath]

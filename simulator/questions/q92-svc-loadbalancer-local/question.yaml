@@ -1,0 +1,20 @@
+id: q92-svc-loadbalancer-local
+title: Create a LoadBalancer Service with Local traffic policy
+domain: networking
+weight: 5
+difficulty: medium
+context: k8s
+host: null
+namespace: svc-lb
+requires: []
+fidelity: partial
+destructive: false
+reset: ns
+time_hint_min: 6
+artifacts: []
+checks_total: 8
+tags: [service, loadbalancer, externaltrafficpolicy, nodeport]
+concept: services
+sub_competency: "Use ClusterIP, NodePort, LoadBalancer service types and endpoints"
+doc: https://kubernetes.io/docs/concepts/services-networking/service/
+note: "kind has no LoadBalancer implementation: EXTERNAL-IP stays pending. Only the API spec, the allocated nodePort and the Local-policy data path are graded."

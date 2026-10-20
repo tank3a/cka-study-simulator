@@ -1,0 +1,21 @@
+id: q83-helm-history-rollback-revision
+title: Find the first good revision in the history and roll back to it
+domain: cluster-architecture
+weight: 6
+difficulty: medium
+context: k8s
+host: null
+namespace: helm-ledger
+requires: [helm]
+fidelity: high
+destructive: false
+reset: ns
+conflicts: []
+time_hint_min: 9
+artifacts:
+  - path: /home/candidate/answers/q83-revision.txt
+    on: term
+  - path: /home/candidate/answers/q83-values.yaml
+    on: term
+checks_total: 7
+tags: [helm, history, rollback, get-values, revision]

@@ -1,0 +1,18 @@
+id: q52-rollback-to-named-revision
+title: Roll back to a specific revision found in rollout history
+domain: workloads
+weight: 5
+difficulty: medium
+context: k8s
+host: null
+namespace: rollout2
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 7
+artifacts:
+  - path: /home/candidate/history-before.txt
+    on: term
+checks_total: 6
+tags: [deployment, rollout, history, undo, change-cause]

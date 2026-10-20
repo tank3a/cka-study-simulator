@@ -1,0 +1,21 @@
+id: q34-ingress-tls-paths
+title: Create an Ingress with paths and TLS
+domain: networking
+weight: 4
+difficulty: medium
+context: k8s
+host: null
+namespace: ing-lab
+requires: [ingress]
+fidelity: partial
+destructive: false
+reset: ns
+time_hint_min: 6
+artifacts: []
+checks_total: 7
+tags: [ingress, tls, pathtype, optional]
+concept: ingress
+sub_competency: "Know how to use Ingress controllers and Ingress resources"
+doc: https://kubernetes.io/docs/concepts/services-networking/ingress/
+optional: true
+note: "ingress-nginx is retired (Mar 2026). Spec checks always run; the live HTTP check only runs if the ingress-nginx addon is installed. Low-fidelity, keep out of default sets."

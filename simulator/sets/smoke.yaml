@@ -1,0 +1,4 @@
+name: smoke
+duration_min: 10
+questions:
+  - q00-smoke

@@ -1,0 +1,16 @@
+id: q03-pv-reclaim-accessmode
+title: Change a reclaim policy and bind a read-only claim by selector
+domain: storage
+weight: 6
+difficulty: medium
+context: k8s
+host: null
+namespace: retain-demo
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 8
+artifacts: []
+checks_total: 9
+tags: [pv, pvc, reclaim-policy, access-modes, selector, readonly]

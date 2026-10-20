@@ -1,0 +1,20 @@
+id: q102-ingress-class-controller-match
+title: Match Ingress objects to the right IngressClass
+domain: networking
+weight: 5
+difficulty: medium
+context: k8s
+host: null
+namespace: ing-fix
+requires: [ingress]
+fidelity: partial
+destructive: true
+reset: ns
+time_hint_min: 7
+artifacts: []
+checks_total: 6
+tags: [ingress, ingressclass, controller, troubleshooting, deprecated-annotation]
+concept: ingress-controller-ingressclass
+sub_competency: "Know how to use Ingress controllers and Ingress resources"
+doc: https://kubernetes.io/docs/concepts/services-networking/ingress-controllers/
+note: "Cluster-scoped IngressClasses fix-nginx and fix-haproxy are created and deleted by setup/cleanup. Spec-only: no live controller required."

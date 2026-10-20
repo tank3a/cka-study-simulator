@@ -1,0 +1,16 @@
+id: q54-statefulset-headless-pvc
+title: Create a StatefulSet with a headless Service and volumeClaimTemplates
+domain: workloads
+weight: 7
+difficulty: medium
+context: k8s
+host: null
+namespace: sts-demo
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 10
+artifacts: []
+checks_total: 8
+tags: [statefulset, headless-service, volumeclaimtemplates, dns]

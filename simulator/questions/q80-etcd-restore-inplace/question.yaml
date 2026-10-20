@@ -1,0 +1,19 @@
+id: q80-etcd-restore-inplace
+title: Restore etcd in place by stopping the static Pod (no manifest edit)
+domain: cluster-architecture
+weight: 7
+difficulty: hard
+context: ek8s
+host: ek8s-cp
+namespace: etcd-ip
+requires: [etcdctl]
+fidelity: high
+destructive: true
+reset: cluster-soft
+conflicts: [q18, q17, q75, q79]   # both q18 and q80 replace the ek8s etcd data: never in the same set. Other ek8s etcd-reading questions must be graded before the restore.
+time_hint_min: 12
+artifacts:
+  - path: /var/lib/etcd.old
+    on: ek8s-cp
+checks_total: 8
+tags: [etcd, restore, static-pod, etcdutl, downtime]

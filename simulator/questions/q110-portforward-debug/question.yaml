@@ -1,0 +1,22 @@
+id: q110-portforward-debug
+title: port-forward to a Pod and kubectl debug a shell-less container
+domain: troubleshooting
+sub_competency: Manage and evaluate container output streams
+weight: 6
+difficulty: medium
+context: k8s
+host: null
+namespace: pf-lab
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 10
+conflicts: []
+artifacts:
+  - path: /home/candidate/q110/v2-version.txt
+    on: term
+  - path: /home/candidate/q110/license.txt
+    on: term
+checks_total: 6
+tags: [port-forward, kubectl-debug, ephemeral-container, shell-less]

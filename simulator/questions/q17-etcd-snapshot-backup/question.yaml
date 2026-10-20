@@ -1,0 +1,20 @@
+id: q17-etcd-snapshot-backup
+title: Take and verify an etcd snapshot
+domain: cluster-architecture
+weight: 6
+difficulty: medium
+context: ek8s
+host: ek8s-cp
+namespace: null
+requires: [etcdctl]
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 7
+artifacts:
+  - path: /opt/cka/etcd-backup.db
+    on: ek8s-cp
+  - path: /opt/cka/etcd-members.txt
+    on: ek8s-cp
+checks_total: 6
+tags: [etcd, backup, snapshot, tls]

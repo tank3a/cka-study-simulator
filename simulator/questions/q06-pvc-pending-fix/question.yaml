@@ -1,0 +1,16 @@
+id: q06-pvc-pending-fix
+title: Fix a PersistentVolumeClaim stuck in Pending
+domain: storage
+weight: 6
+difficulty: hard
+context: k8s
+host: null
+namespace: pvc-fix
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 9
+artifacts: []
+checks_total: 6
+tags: [pvc, pv, troubleshooting, access-modes, volumemode, storageclass]

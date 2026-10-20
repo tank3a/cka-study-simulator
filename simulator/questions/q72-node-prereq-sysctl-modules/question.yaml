@@ -1,0 +1,23 @@
+id: q72-node-prereq-sysctl-modules
+title: Prepare a node for kubeadm (modules, sysctl, swap, cgroup driver)
+domain: cluster-architecture
+weight: 4
+difficulty: medium
+context: ek8s
+host: ek8s-node1
+namespace: null
+requires: []
+fidelity: low   # kind nodes share the Docker VM kernel; modprobe and non-namespaced sysctls cannot be applied, so only the files are graded (DESIGN sec. 9)
+destructive: false
+reset: ns
+conflicts: []
+time_hint_min: 8
+artifacts:
+  - path: /etc/modules-load.d/k8s.conf
+    on: ek8s-node1
+  - path: /etc/sysctl.d/99-k8s-cri.conf
+    on: ek8s-node1
+  - path: /opt/cka/prereq-report.txt
+    on: ek8s-node1
+checks_total: 8
+tags: [kubeadm, prerequisites, sysctl, kernel-modules, swap, containerd, systemd-cgroup]

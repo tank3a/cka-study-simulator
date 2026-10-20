@@ -1,0 +1,24 @@
+id: q50-kubectl-top-usage
+title: Find and cap the resource hogs
+domain: troubleshooting
+sub_competency: Monitor cluster and application resource usage
+weight: 5
+difficulty: easy
+context: k8s
+host: null
+namespace: top-lab
+requires: [metrics-server]
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 7
+conflicts: []
+artifacts:
+  - path: /home/candidate/q50/top-cpu-pod.txt
+    on: term
+  - path: /home/candidate/q50/top-mem-pod.txt
+    on: term
+  - path: /home/candidate/q50/nodes.txt
+    on: term
+checks_total: 6
+tags: [metrics-server, kubectl-top, limits, monitoring]

@@ -1,0 +1,304 @@
+#!/usr/bin/env bash
+# exam: CKA simulator exam CLI. Runs on the host (full) and inside exam-term (display + proxy to host daemon).
+set -uo pipefail
+SELF="${BASH_SOURCE[0]}"; while [ -L "$SELF" ]; do SELF=$(readlink "$SELF"); done
+HERE="$(cd "$(dirname "$SELF")" && pwd)"
+if [ "$(hostname)" = cka-term ]; then MODE=term; STATE=/var/lib/exam; QROOT=$STATE/bank; SIM_ROOT=/opt/exam
+else MODE=host; SIM_ROOT="$(cd "$HERE/.." && pwd)"; STATE="$SIM_ROOT/state/share"; QROOT="$SIM_ROOT/questions"; fi
+export SIM_ROOT LIB="$SIM_ROOT/lib"
+SESS="$STATE/session.json"; RES="$STATE/results"; REQ="$STATE/req"; RESP="$STATE/resp"
+mkdir -p "$STATE" "$RES" "$REQ" "$RESP" 2>/dev/null
+B=$'\033[1m'; G=$'\033[32m'; R=$'\033[31m'; Y=$'\033[33m'; C=$'\033[36m'; Z=$'\033[0m'
+die() { echo "${R}exam: $*${Z}" >&2; exit 1; }
+need_session() { [ -s "$SESS" ] || die "no active session. Run: exam start [set]   (or: exam practice <id>)"; }
+jqs() { jq -r "$@" "$SESS"; }
+jset() { local f; f=$(mktemp "$STATE/.s.XXXXXX"); jq "$@" "$SESS" > "$f" && mv "$f" "$SESS"; chmod 666 "$SESS" 2>/dev/null; }
+yget() { awk -v k="$2" 'BEGIN{FS=":"} $1==k{v=$0; sub(/^[^:]*:[ \t]*/,"",v); sub(/[ \t]+#.*$/,"",v); gsub(/^["\047]|["\047]$/,"",v); if(v=="null")v=""; print v; exit}' "$1/question.yaml"; }
+qdir() { echo "$QROOT/$1"; }
+qid_of() { jqs --argjson n "$1" '.questions[$n-1] // empty'; }
+nq() { jqs '.questions|length'; }
+cluster_of() { case "$1" in mk8s|wk8s|k8s) echo k8s;; ek8s) echo ek8s;; ik8s) echo ik8s;; *) echo "$1";; esac; }
+now() { date +%s; }
+fmt_t() { local s=$1; [ "$s" -lt 0 ] && s=0; printf '%02d:%02d:%02d' $((s/3600)) $((s%3600/60)) $((s%60)); }
+remaining() { local d; d=$(jqs '.duration_s'); [ "$d" = 0 ] && { echo -1; return; }; echo $(( $(jqs '.started_at') + d - $(now) )); }
+timer_running() { [ -s "$SESS" ] && [ "$(jqs '.ended // false')" = false ] && [ "$(jqs '.duration_s')" != 0 ] && [ "$(remaining)" -gt 0 ]; }
+
+# ---------- proxying (term -> host daemon) ----------
+proxy() {
+  local id="$$-$(now)" i
+  printf '%s\n' "$*" > "$REQ/$id.req.tmp" && mv "$REQ/$id.req.tmp" "$REQ/$id.req"
+  : > "$RESP/$id.out"
+  tail -n +1 -f "$RESP/$id.out" 2>/dev/null & local tp=$!
+  for i in $(seq 1 1800); do [ -f "$RESP/$id.done" ] && break; sleep 0.5; done
+  sleep 0.7; kill $tp 2>/dev/null; wait $tp 2>/dev/null
+  if [ -f "$RESP/$id.done" ]; then
+    local rc; rc=$(cat "$RESP/$id.done"); rm -f "${RESP:?}/$id.out" "${RESP:?}/$id.done"; return "${rc:-0}"
+  else echo "${R}timeout: is the host daemon running? On the Mac run: bin/exam daemon-ensure${Z}"; return 1; fi
+}
+cmd_daemon() { # host
+  [ "$MODE" = host ] || die "host only"
+  echo $$ > "$STATE/daemon.pid"
+  while :; do
+    for f in "$REQ"/*.req; do [ -f "$f" ] || continue
+      id=$(basename "$f" .req); args=$(cat "$f"); rm -f "$f"
+      ( "$HERE/exam" $args < /dev/null > "$RESP/$id.out" 2>&1; echo $? > "$RESP/$id.done" ) &
+    done; sleep 1
+  done
+}
+cmd_daemon_ensure() {
+  [ "$MODE" = host ] || return 0
+  if [ -f "$STATE/daemon.pid" ] && kill -0 "$(cat "$STATE/daemon.pid")" 2>/dev/null; then return 0; fi
+  mkdir -p "$SIM_ROOT/state/logs"
+  nohup "$HERE/exam" daemon >"$SIM_ROOT/state/logs/daemon.log" 2>&1 </dev/null &
+  echo "daemon started"
+}
+
+# ---------- display ----------
+render_md() { # id
+  local d ctx ns host; d=$(qdir "$1"); ctx=$(yget "$d" context); ns=$(yget "$d" namespace); host=$(yget "$d" host)
+  sed -e "s/{{context}}/$ctx/g" -e "s/{{namespace}}/${ns:-default}/g" -e "s/{{host}}/${host:+ssh $host}/g" "$d/question.md"
+}
+show_q() { # n
+  need_session; local n=$1 id d
+  id=$(qid_of "$n"); [ -n "$id" ] || die "no question $n (1..$(nq))"
+  jset --argjson n "$n" '.current=$n'
+  d=$(qdir "$id")
+  [ -f "$d/question.yaml" ] || die "question files for $id missing"
+  local w ctx host fl=""
+  w=$(yget "$d" weight); ctx=$(yget "$d" context); host=$(yget "$d" host)
+  [ "$(jqs --argjson n "$n" '.flagged|index($n)!=null')" = true ] && fl="    ${Y}[FLAGGED]${Z}"
+  echo "${B}Question $n / $(nq)    Weight: ${w}%    Context: ${ctx}${host:+    Host: ssh $host}${Z}${fl}"
+  echo "  ${C}-> run first:  kubectl config use-context $ctx${Z}"
+  echo
+  render_md "$id"
+  echo
+}
+cmd_list() {
+  need_session; local i id d last fl cur
+  printf '%s\n' "${B}  #  id                                    weight  context  flag  checked${Z}"
+  for i in $(seq 1 "$(nq)"); do
+    id=$(qid_of "$i"); d=$(qdir "$id")
+    last=$(jqs --arg id "$id" '.results[$id] | if . then "yes" else "-" end')
+    [ "$(jqs '.detail')" = true ] && last=$(jqs --arg id "$id" '.results[$id] | if . then "\(.passed)/\(.total)" else "-" end')
+    [ "$(jqs --argjson n "$i" '.flagged|index($n)!=null')" = true ] && fl="*" || fl=" "
+    cur=" "; [ "$(jqs '.current')" = "$i" ] && cur=">"
+    printf '%s %2d  %-38s %5s%%  %-7s  %s    %s\n' "$cur" "$i" "$id" "$(yget "$d" weight)" "$(yget "$d" context)" "$fl" "$last"
+  done
+  timer_line
+}
+timer_line() {
+  local r; r=$(remaining)
+  if [ "$(jqs '.ended // false')" = true ]; then echo "session ended"; elif [ "$r" = -1 ]; then echo "(untimed)"; else echo "time left: $(fmt_t "$r")"; fi
+}
+cmd_timer() {
+  [ -s "$SESS" ] || exit 0
+  local r; r=$(remaining)
+  if [ "$r" = -1 ]; then echo "untimed"; return; fi
+  [ "$(jqs '.ended // false')" = true ] && { echo "ended"; return; }
+  local s; s=$(fmt_t "$r"); [ "$r" -le 300 ] && s="!! $s !!"
+  if [ "${1:-}" = --watch ]; then while :; do printf '\r%s  ' "$s"; sleep 1; r=$(remaining); s=$(fmt_t "$r"); done; else echo "$s"; fi
+}
+
+# ---------- host-side machinery ----------
+sync_bank() { # copy public question files to share
+  mkdir -p "$STATE/bank"; local id
+  for id in $(jqs '.questions[]'); do
+    mkdir -p "$STATE/bank/$id"; cp "$SIM_ROOT/questions/$id/question.yaml" "$SIM_ROOT/questions/$id/question.md" "$STATE/bank/$id/"
+  done
+  chmod -R a+rX "$STATE/bank"
+}
+run_script() { # id script
+  local id=$1 s=$2 d="$SIM_ROOT/questions/$1"
+  [ -f "$d/$s" ] || return 0
+  ( cd "$d" && QID=$id QDIR=$d SIM_ROOT=$SIM_ROOT LIB=$SIM_ROOT/lib ADMIN_KUBECONFIG=$SIM_ROOT/state/admin.kubeconfig bash "$s" )
+}
+default_cleanup() { # id
+  local id=$1 d="$SIM_ROOT/questions/$1" c; c=$(cluster_of "$(yget "$d" context)")
+  source "$LIB/common.sh"
+  local k; for k in clusterrolebinding clusterrole pv storageclass priorityclass gatewayclass crd; do
+    kc "$c" delete "$k" -l "exam.q=$id" --wait=false >/dev/null 2>&1; done
+  kc "$c" delete ns -l "exam.q=$id" --wait=false >/dev/null 2>&1
+  local i; for i in $(seq 1 30); do [ -z "$(kc "$c" get ns -l "exam.q=$id" -o name 2>/dev/null)" ] && break; sleep 2; done
+}
+seed_one() { local id=$1; echo "  seeding $id" >&2; run_script "$id" setup.sh > "$SIM_ROOT/state/logs/setup-$id.log" 2>&1 || echo "  ${Y}WARN: setup of $id returned non-zero (see state/logs/setup-$id.log)${Z}" >&2; }
+seed_all() { # parallel across clusters, sequential within
+  local ids="$1" cl id pids=""; mkdir -p "$SIM_ROOT/state/logs"
+  for cl in k8s ek8s ik8s; do
+    ( for id in $ids; do [ "$(cluster_of "$(yget "$SIM_ROOT/questions/$id" context)")" = "$cl" ] && seed_one "$id"; done ) &
+    pids="$pids $!"
+  done; wait $pids
+}
+grade() { # id -> writes $RES/<id>.json; sets G_P G_T
+  local id=$1 d="$SIM_ROOT/questions/$1" out
+  out=$(cd "$d" && QID=$id QDIR=$d SIM_ROOT=$SIM_ROOT LIB=$SIM_ROOT/lib ADMIN_KUBECONFIG=$SIM_ROOT/state/admin.kubeconfig bash grade.sh 2>/dev/null </dev/null)
+  printf '%s\n' "$out" | grep '^{' | jq -s '.' > "$RES/$id.json" 2>/dev/null || echo '[]' > "$RES/$id.json"
+  G_P=$(jq '[.[]|select(.pass)|.points]|add // 0' "$RES/$id.json"); G_T=$(jq '[.[].points]|add // 0' "$RES/$id.json")
+  chmod 666 "$RES/$id.json"
+  jset --arg id "$id" --argjson p "$G_P" --argjson t "$G_T" --argjson ts "$(now)" '.results[$id]={passed:$p,total:$t,ts:$ts}'
+}
+show_checks() { jq -r '.[]|"  \(if .pass then "PASS" else "FAIL" end)  \(.check) (\(.points) pt)\(if .pass then "" else "\n        -> " + (.detail|tostring|.[0:160]) end)"' "$RES/$1.json" | sed -e "s/^  PASS/  ${G}PASS${Z}/" -e "s/^  FAIL/  ${R}FAIL${Z}/"; }
+
+cmd_check() {
+  need_session; local t=${1:-$(jqs '.current')} ids i id
+  if [ "$t" = all ]; then ids=$(seq 1 "$(nq)"); else ids=$t; fi
+  for i in $ids; do
+    id=$(qid_of "$i"); [ -n "$id" ] || die "no question $i"
+    grade "$id"
+    if [ "$(jqs '.detail')" = true ]; then
+      echo "${B}Q$i $id${Z}  $G_P/$G_T points"; show_checks "$id"
+    else echo "Q$i: checked ($G_T scoring points evaluated). Details are shown at 'exam end' (use 'exam start --practice' for live feedback)."; fi
+  done
+}
+
+compute_score() { # prints table
+  local i id d w tw=0 earned=0 frac sc dom tot weak
+  : > "$STATE/.dom.$$"
+  echo "${B}  #  id                                    domain                   points   score${Z}"
+  for i in $(seq 1 "$(nq)"); do
+    id=$(qid_of "$i"); d=$(qdir "$id"); w=$(yget "$d" weight); dom=$(yget "$d" domain)
+    grade "$id"; tw=$((tw + w))
+    frac=$(awk -v p="$G_P" -v t="$G_T" 'BEGIN{ if(t>0) printf "%.4f", p/t; else print 0 }')
+    sc=$(awk -v f="$frac" -v w="$w" 'BEGIN{printf "%.2f", f*w}')
+    earned=$(awk -v e="$earned" -v s="$sc" 'BEGIN{printf "%.2f", e+s}')
+    printf '  %2d  %-38s %-22s %3s/%-3s  %5s / %s\n' "$i" "$id" "$dom" "$G_P" "$G_T" "$sc" "$w"
+    echo "$dom $frac $w" >> "$STATE/.dom.$$"
+  done
+  tot=$(awk -v e="$earned" -v t="$tw" 'BEGIN{ if(t>0) printf "%.1f", 100*e/t; else print 0 }')
+  echo
+  if awk -v p="$tot" 'BEGIN{exit !(p>=66)}'; then echo "${B}TOTAL: ${tot}%   ${G}PASS${Z}${B} (pass mark 66%)${Z}"; else echo "${B}TOTAL: ${tot}%   ${R}FAIL${Z}${B} (pass mark 66%)${Z}"; fi
+  weak=$(awk '{w[$1]+=$3; e[$1]+=$2*$3} END{for(k in w) if(e[k]/w[k]<0.66) printf "%s(%.0f%%) ", k, 100*e[k]/w[k]}' "$STATE/.dom.$$"); rm -f "$STATE/.dom.$$"
+  [ -n "$weak" ] && echo "Weak domains: $weak"
+  return 0
+}
+cmd_score() { need_session; compute_score; }
+
+cmd_start() {
+  [ "$MODE" = host ] || { proxy start "$@"; return; }
+  local set="" dur=120 seed=1 practice=0 ids="" a clean=1
+  while [ $# -gt 0 ]; do case "$1" in
+      --duration) dur=${2%m}; shift 2;; --no-seed) seed=0; shift;; --no-clean) clean=0; shift;; --practice) practice=1; shift;;
+      q[0-9]*) ids="$ids $1"; shift;; *) set=$1; shift;; esac; done
+  [ -s "$SIM_ROOT/state/admin.kubeconfig" ] || die "no clusters: run bin/sim up"
+  [ "$(docker inspect -f '{{.State.Running}}' exam-term 2>/dev/null)" = true ] || die "exam-term not running: bin/sim up"
+  if [ -z "$ids" ]; then
+    set=${set:-mock-a}; local f="$SIM_ROOT/sets/$set.yaml"; [ -f "$f" ] || die "no such set: $f"
+    ids=$(grep -E '^[[:space:]]*-[[:space:]]*q[0-9]' "$f" | sed -E 's/^[[:space:]]*-[[:space:]]*//; s/[[:space:]]*(#.*)?$//')
+    local sd; sd=$(awk -F': *' '$1=="duration_min"{print $2}' "$f"); [ -n "$sd" ] && [ "$dur" = 120 ] && dur=$sd
+  else set=custom; fi
+  for a in $ids; do [ -f "$SIM_ROOT/questions/$a/question.yaml" ] || die "unknown question $a"; done
+  [ $seed = 1 ] && [ $clean = 1 ] && [ -s "$SESS" ] && cmd_cleanup
+  local jl; jl=$(printf '%s\n' $ids | jq -R . | jq -s .)
+  echo '{}' | jq --arg set "$set" --argjson q "$jl" --argjson dur $((dur*60)) --argjson pr $practice \
+    '{set:$set,questions:$q,duration_s:$dur,started_at:0,current:1,flagged:[],results:{},ended:false,mode:(if $pr==1 then "practice" else "exam" end),detail:($pr==1)}' > "$SESS"
+  chmod 666 "$SESS"; rm -f "$RES"/*.json; sync_bank
+  cmd_daemon_ensure >/dev/null
+  if [ $seed = 1 ]; then echo "Seeding $(echo $ids | wc -w | tr -d ' ') tasks (timer starts after seeding)..."; seed_all "$ids"; fi
+  jset --argjson t "$(now)" '.started_at=$t'
+  echo "${B}Session started: set=$set, $(echo $ids | wc -w | tr -d ' ') questions, ${dur} min.${Z}"
+  echo; show_q 1
+}
+cmd_practice() {
+  [ "$MODE" = host ] || { proxy practice "$@"; return; }
+  [ -n "${1:-}" ] || die "usage: exam practice <question-id>"
+  cmd_start "$1" --practice --duration 0m
+}
+cmd_reset() {
+  [ "$MODE" = host ] || { proxy reset "$@"; return; }
+  need_session; local n=${1:-$(jqs '.current')} hard=0; [ "${2:-}" = --hard ] && hard=1
+  local id d lvl c host etcd o nd nodes all; id=$(qid_of "$n"); [ -n "$id" ] || die "no question $n"
+  d="$SIM_ROOT/questions/$id"; lvl=$(yget "$d" reset); lvl=${lvl:-ns}; c=$(cluster_of "$(yget "$d" context)"); host=$(yget "$d" host); etcd=$(yget "$d" reset_etcd)
+  [ $hard = 1 ] && lvl=cluster-hard
+  echo "Resetting Q$n ($id) at level $lvl ..."
+  all=$(jqs '.questions[]')
+  case "$lvl" in
+    ns) run_script "$id" cleanup.sh >/dev/null 2>&1 || true; default_cleanup "$id"; seed_one "$id";;
+    cluster-soft)
+      if [ -n "$host" ]; then nodes=$host; else nodes=$(docker ps --filter "label=io.x-k8s.kind.cluster=$c" --format '{{.Names}}'); fi
+      for nd in $nodes; do
+        if [ "$etcd" = true ]; then "$SIM_ROOT/bin/sim" restore-node "$nd" --etcd; else "$SIM_ROOT/bin/sim" restore-node "$nd"; fi
+      done
+      run_script "$id" cleanup.sh >/dev/null 2>&1 || true; default_cleanup "$id"
+      if [ "$etcd" = true ]; then for o in $all; do [ "$(cluster_of "$(yget "$SIM_ROOT/questions/$o" context)")" = "$c" ] && seed_one "$o"; done; else seed_one "$id"; fi;;
+    cluster-hard)
+      "$SIM_ROOT/bin/sim" recreate "$c" >/dev/null 2>&1 || die "cluster recreate failed"
+      for o in $all; do [ "$(cluster_of "$(yget "$SIM_ROOT/questions/$o" context)")" = "$c" ] && seed_one "$o"; done;;
+    *) die "unknown reset level $lvl";;
+  esac
+  jset --arg id "$id" 'del(.results[$id])'
+  echo "Reset done."
+}
+cmd_cleanup() { # host: undo what the previous session changed (no re-seed), so the next question starts from a clean cluster
+  [ "$MODE" = host ] || { proxy cleanup "$@"; return; }
+  [ -s "$SESS" ] || { echo "nothing to clean (no previous session)"; return 0; }
+  [ "$(jqs '.cleaned // false')" = true ] && { echo "already clean"; return 0; }
+  local id d lvl c host etcd nd nodes seen=" "
+  echo "Cleaning up the previous session ($(jqs '.questions|length') question(s)) ..."
+  for id in $(jqs '.questions[]'); do   # pass 1: node-level and whole-cluster restores (API must be back before pass 2)
+    d="$SIM_ROOT/questions/$id"; [ -d "$d" ] || continue
+    lvl=$(yget "$d" reset); lvl=${lvl:-ns}; c=$(cluster_of "$(yget "$d" context)"); host=$(yget "$d" host); etcd=$(yget "$d" reset_etcd)
+    case "$lvl" in
+      cluster-hard)
+        case "$seen" in *" hard:$c "*) continue;; esac; seen="$seen""hard:$c "
+        if [ -n "$(docker ps -q --filter "label=io.x-k8s.kind.cluster=$c" | head -1)" ]; then
+          echo "  $id: recreating cluster $c"; "$SIM_ROOT/bin/sim" recreate "$c" >/dev/null 2>&1 || echo "  ${Y}WARN: recreate $c failed${Z}"
+        fi;;
+      cluster-soft)
+        if [ -n "$host" ]; then nodes=$host; else nodes=$(docker ps --filter "label=io.x-k8s.kind.cluster=$c" --format '{{.Names}}'); fi
+        for nd in $nodes; do
+          case "$seen" in *" $nd:$etcd "*) continue;; esac; seen="$seen""$nd:$etcd "
+          echo "  $id: restoring node $nd"
+          if [ "$etcd" = true ]; then "$SIM_ROOT/bin/sim" restore-node "$nd" --etcd >/dev/null 2>&1; else "$SIM_ROOT/bin/sim" restore-node "$nd" >/dev/null 2>&1; fi
+        done;;
+    esac
+  done
+  for id in $(jqs '.questions[]'); do   # pass 2: each question's own cleanup.sh plus labelled objects
+    [ -d "$SIM_ROOT/questions/$id" ] || continue
+    run_script "$id" cleanup.sh >/dev/null 2>&1 || true; default_cleanup "$id"
+  done
+  jset '.cleaned=true'
+  echo "Clean."
+}
+cmd_end() {
+  [ "$MODE" = host ] || { proxy end "$@"; return; }
+  need_session; jset '.ended=true|.detail=true'
+  local ts i id; ts=$(date +%Y%m%d-%H%M%S); mkdir -p "$SIM_ROOT/state/results/$ts"
+  {
+    compute_score
+    for i in $(seq 1 "$(nq)"); do id=$(qid_of "$i"); echo; echo "${B}Q$i $id${Z}"; show_checks "$id"; done
+  } | tee "$SIM_ROOT/state/results/$ts/score.txt"
+  cp "$SESS" "$SIM_ROOT/state/results/$ts/session.json"; cp "$RES"/*.json "$SIM_ROOT/state/results/$ts/" 2>/dev/null
+  echo; echo "Archived to state/results/$ts. Re-seed a task with: exam reset <n>"
+}
+cmd_solution() {
+  [ "$MODE" = host ] || die "solutions are only available on the host (outside the exam terminal)"
+  need_session; local n=${1:-$(jqs '.current')} force=${2:-}
+  if timer_running && [ "$(jqs '.mode')" = exam ] && [ "$force" != --force ]; then die "timer is running; use --force to peek"; fi
+  local id; id=$(qid_of "$n"); [ -n "$id" ] || die "no question $n"; cat "$SIM_ROOT/questions/$id/solution.md"
+}
+cmd_flag() { need_session; local n=${1:-$(jqs '.current')}; jset --argjson n "$n" '.flagged=((.flagged+[$n])|unique)'; echo "flagged Q$n"; }
+cmd_unflag() { need_session; local n=${1:-$(jqs '.current')}; jset --argjson n "$n" '.flagged=(.flagged-[$n])'; echo "unflagged Q$n"; }
+cmd_next() { need_session; local c; c=$(jqs '.current'); [ "$c" -lt "$(nq)" ] && c=$((c+1)); show_q "$c"; }
+cmd_prev() { need_session; local c; c=$(jqs '.current'); [ "$c" -gt 1 ] && c=$((c-1)); show_q "$c"; }
+
+cmd=${1:-help}; [ $# -gt 0 ] && shift
+case "$cmd" in
+  start) cmd_start "$@";; q) need_session; show_q "${1:-$(jqs '.current')}";; next|n) cmd_next;; prev|p) cmd_prev;;
+  list|ls) cmd_list;; flag) cmd_flag "$@";; unflag) cmd_unflag "$@";; timer) cmd_timer "$@";;
+  check) if [ "$MODE" = host ]; then cmd_check "$@"; else proxy check "$@"; fi;;
+  score) if [ "$MODE" = host ]; then cmd_score; else proxy score; fi;;
+  end) cmd_end "$@";; reset) cmd_reset "$@";; cleanup) cmd_cleanup "$@";; practice) cmd_practice "$@";; solution) cmd_solution "$@";;
+  daemon) cmd_daemon;; daemon-ensure) cmd_daemon_ensure;;
+  *) cat <<USAGE
+exam start [set|qid...] [--duration 120m] [--no-seed] [--no-clean] [--practice]   start a session (default set: mock-a); first undoes the previous session's changes
+exam cleanup             undo the previous session's changes (node labels/taints, kubelet/manifest edits, CoreDNS, ...) without starting anything
+exam practice <qid>      untimed single question with full check output
+exam q [n] | next | prev | list            navigate
+exam flag [n] | unflag [n]                 review flag
+exam check [n|all]       grade (details hidden until 'exam end' unless --practice)
+exam reset [n] [--hard]  re-seed one task (--hard recreates its cluster)
+exam timer [--watch]     time left
+exam score | end         score table / finish and archive
+exam solution [n] [--force]   (host only)
+USAGE
+  ;;
+esac

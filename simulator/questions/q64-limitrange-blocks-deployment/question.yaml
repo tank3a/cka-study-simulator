@@ -1,0 +1,16 @@
+id: q64-limitrange-blocks-deployment
+title: Fix a Deployment whose Pods are rejected by a LimitRange
+domain: workloads
+weight: 6
+difficulty: hard
+context: k8s
+host: null
+namespace: lr-fix
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 10
+artifacts: []
+checks_total: 7
+tags: [limitrange, replicaset-events, troubleshooting, pvc-limit]

@@ -1,0 +1,19 @@
+id: q32-gateway-tls-listener
+title: Gateway with HTTPS listener and HTTP redirect
+domain: networking
+weight: 8
+difficulty: hard
+context: k8s
+host: null
+namespace: gw-tls
+requires: [gateway-api]
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 12
+artifacts: []
+checks_total: 10
+tags: [gateway-api, gateway, tls, httproute, redirect]
+concept: gateway-api
+sub_competency: "Use the Gateway API to manage Ingress traffic"
+doc: https://gateway-api.sigs.k8s.io/guides/user-guides/http-routing/

@@ -1,0 +1,18 @@
+id: q44-service-selector-targetport
+title: Two Services that cannot be reached
+domain: troubleshooting
+sub_competency: Troubleshoot services and networking
+weight: 6
+difficulty: easy
+context: k8s
+host: null
+namespace: svc-lab
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 7
+conflicts: []
+artifacts: []
+checks_total: 6
+tags: [service, endpoints, selector, targetPort]

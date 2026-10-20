@@ -1,0 +1,19 @@
+id: q89-cni-calico-operator-installation
+title: Install Calico with the operator and an Installation resource
+domain: cluster-architecture
+weight: 7
+difficulty: hard
+context: ik8s
+host: ik8s-cp
+namespace: cni-b
+requires: [ik8s, calico]
+fidelity: partial   # needs ik8s plus tigera-operator.yaml / custom-resources.yaml staged in exam-assets/manifests; verified on live ik8s (lane I)
+destructive: true
+reset: cluster-hard
+conflicts: [q88, q19]   # one CNI install per ik8s lifetime
+time_hint_min: 14
+artifacts:
+  - path: /home/candidate/manifests/custom-resources.yaml
+    on: term
+checks_total: 8
+tags: [cni, calico, tigera-operator, Installation, CRD, ik8s]

@@ -1,0 +1,19 @@
+id: q107-apiserver-authz-keyfile
+title: kube-apiserver crash - authorization mode and key file
+domain: troubleshooting
+sub_competency: Troubleshoot cluster components
+weight: 8
+difficulty: hard
+context: ek8s
+host: ek8s-cp
+namespace: null
+requires: []
+fidelity: high
+destructive: true
+reset: cluster-soft
+time_hint_min: 12
+seed_order: last        # API of ek8s is down after seeding; every other ek8s seed must run before
+conflicts: [q37-kubelet-stopped, q39-apiserver-flags-broken, q40-scheduler-down, q103-controller-manager-crash, q104-controller-manager-disabled, q108-scheduler-flags-probe]
+artifacts: []
+checks_total: 6
+tags: [control-plane, kube-apiserver, static-pod, crictl, authorization-mode]

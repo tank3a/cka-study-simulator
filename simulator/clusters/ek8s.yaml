@@ -1,0 +1,8 @@
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: ek8s
+nodes:
+- role: control-plane
+  image: cka-sim/node:v1.34.0
+- role: worker
+  image: cka-sim/node:v1.34.0

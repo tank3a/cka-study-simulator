@@ -1,0 +1,19 @@
+id: q75-kubeadm-token-controlplane-join
+title: Bootstrap token and join command for an additional control plane node
+domain: cluster-architecture
+weight: 5
+difficulty: medium
+context: ek8s
+host: ek8s-cp
+namespace: null
+requires: []
+fidelity: high    # tooling is real; the node is never actually joined
+destructive: false
+reset: ns
+conflicts: [q18, q80]   # a restore of an older snapshot removes the token and kubeadm-certs secrets: grade this question before q18/q80 restore
+time_hint_min: 9
+artifacts:
+  - path: /opt/cka/cp-join.txt
+    on: ek8s-cp
+checks_total: 6
+tags: [kubeadm, token, join, control-plane, certificate-key, upload-certs]

@@ -1,0 +1,16 @@
+id: q56-job-parallel-completions
+title: Create a parallel Job with completions, deadline and TTL
+domain: workloads
+weight: 5
+difficulty: medium
+context: k8s
+host: null
+namespace: job-demo
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 7
+artifacts: []
+checks_total: 7
+tags: [job, completions, parallelism, backofflimit, ttl]

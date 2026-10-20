@@ -1,0 +1,19 @@
+id: q12-taints-nodeselector
+title: Taints, tolerations and nodeSelector
+domain: workloads
+weight: 6
+difficulty: medium
+context: k8s
+host: null
+namespace: taint-demo
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 10
+artifacts:
+  - path: /home/candidate/noschedule-nodes.txt
+    on: term
+checks_total: 11
+tags: [taints, tolerations, nodeselector, labels, control-plane]
+conflicts: [q53-daemonset-nodeselector-rolling]  # both set/remove the node label disk=ssd

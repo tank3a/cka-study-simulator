@@ -1,0 +1,19 @@
+id: q90-csi-driver-storageclass-objects
+title: Register a CSIDriver, build a StorageClass on it and report CSI facts
+domain: cluster-architecture
+weight: 4
+difficulty: medium
+context: k8s
+host: null
+namespace: csi-lab
+requires: []
+fidelity: partial   # kind has no real CSI driver (local-path is a plain provisioner): only the API objects and the node/driver facts are graded; the PVC stays Pending by design
+destructive: false
+reset: ns
+conflicts: []
+time_hint_min: 9
+artifacts:
+  - path: /home/candidate/answers/q90.txt
+    on: term
+checks_total: 11
+tags: [csi, csidriver, storageclass, csinode, volumeBindingMode, reclaimPolicy]

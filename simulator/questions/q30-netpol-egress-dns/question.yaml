@@ -1,0 +1,19 @@
+id: q30-netpol-egress-dns
+title: Restrict egress of a client Pod
+domain: networking
+weight: 7
+difficulty: hard
+context: k8s
+host: null
+namespace: egress-lab
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 9
+artifacts: []
+checks_total: 7
+tags: [networkpolicy, egress, dns, namespaceSelector]
+concept: networkpolicy
+sub_competency: "Define and enforce Network Policies"
+doc: https://kubernetes.io/docs/concepts/services-networking/network-policies/

@@ -1,0 +1,18 @@
+id: q22-helm-repo-install-values
+title: Install a Helm chart from a repository with a values file
+domain: cluster-architecture
+weight: 6
+difficulty: medium
+context: k8s
+host: null
+namespace: helm-web
+requires: [helm-repo]
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 8
+artifacts:
+  - path: /home/candidate/answers/q22-versions.txt
+    on: term
+checks_total: 7
+tags: [helm, repo, install, values, nodeport]

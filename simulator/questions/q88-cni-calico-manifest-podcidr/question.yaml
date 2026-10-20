@@ -1,0 +1,19 @@
+id: q88-cni-calico-manifest-podcidr
+title: Install Calico from a manifest with the cluster's Pod CIDR
+domain: cluster-architecture
+weight: 7
+difficulty: hard
+context: ik8s
+host: ik8s-cp
+namespace: cni-a
+requires: [ik8s, calico]
+fidelity: partial   # needs the ik8s cluster (disableDefaultCNI) and /manifests/calico.yaml staged in exam-assets (DESIGN sec. 8 step 2); verified on live ik8s (lane I)
+destructive: true
+reset: cluster-hard
+conflicts: [q89, q19]   # q88 and q89 both install the one CNI of ik8s; q19 needs a working ik8s and also resets it
+time_hint_min: 14
+artifacts:
+  - path: /home/candidate/manifests/calico-custom.yaml
+    on: term
+checks_total: 8
+tags: [cni, calico, install, podCIDR, kubeadm-config, ik8s]

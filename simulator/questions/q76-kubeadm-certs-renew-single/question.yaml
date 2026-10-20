@@ -1,0 +1,19 @@
+id: q76-kubeadm-certs-renew-single
+title: Renew a single kubeadm certificate and restart the API server
+domain: cluster-architecture
+weight: 5
+difficulty: hard
+context: ek8s
+host: ek8s-cp
+namespace: null
+requires: []
+fidelity: high
+destructive: true
+reset: cluster-soft
+conflicts: [q39, q40]   # both edit control plane static pod manifests on ek8s-cp; q18/q80 etcd restore also restarts the API server
+time_hint_min: 10
+artifacts:
+  - path: /opt/cka/ca-notafter.txt
+    on: ek8s-cp
+checks_total: 6
+tags: [kubeadm, certs, renew, openssl, static-pod, apiserver]

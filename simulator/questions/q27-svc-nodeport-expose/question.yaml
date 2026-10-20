@@ -1,0 +1,19 @@
+id: q27-svc-nodeport-expose
+title: Expose a Deployment with NodePort and ClusterIP Services
+domain: networking
+weight: 5
+difficulty: easy
+context: k8s
+host: null
+namespace: svc-nodeport
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 5
+artifacts: []
+checks_total: 8
+tags: [service, nodeport, clusterip, endpoints]
+concept: services
+sub_competency: "Use ClusterIP, NodePort, LoadBalancer service types and endpoints"
+doc: https://kubernetes.io/docs/concepts/services-networking/service/

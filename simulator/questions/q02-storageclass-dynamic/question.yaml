@@ -1,0 +1,16 @@
+id: q02-storageclass-dynamic
+title: Create a StorageClass and use it for dynamic provisioning
+domain: storage
+weight: 5
+difficulty: medium
+context: k8s
+host: null
+namespace: sc-demo
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 6
+artifacts: []
+checks_total: 10
+tags: [storageclass, dynamic-provisioning, reclaim-policy, wffc]

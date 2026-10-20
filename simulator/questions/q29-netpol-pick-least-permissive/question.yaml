@@ -1,0 +1,19 @@
+id: q29-netpol-pick-least-permissive
+title: Apply the least permissive NetworkPolicy
+domain: networking
+weight: 7
+difficulty: medium
+context: k8s
+host: null
+namespace: shop-back
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 6
+artifacts: []
+checks_total: 8
+tags: [networkpolicy, namespaceSelector, podSelector, least-privilege]
+concept: networkpolicy
+sub_competency: "Define and enforce Network Policies"
+doc: https://kubernetes.io/docs/concepts/services-networking/network-policies/

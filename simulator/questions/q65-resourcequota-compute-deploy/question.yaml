@@ -1,0 +1,16 @@
+id: q65-resourcequota-compute-deploy
+title: Create a compute ResourceQuota and make a Deployment fit it
+domain: workloads
+weight: 6
+difficulty: medium
+context: k8s
+host: null
+namespace: quota-a
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 9
+artifacts: []
+checks_total: 7
+tags: [resourcequota, requests, limits, replicaset-events]

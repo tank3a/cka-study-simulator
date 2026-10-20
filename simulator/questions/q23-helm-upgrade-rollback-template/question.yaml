@@ -1,0 +1,18 @@
+id: q23-helm-upgrade-rollback-template
+title: Roll back a broken Helm upgrade and render a chart
+domain: cluster-architecture
+weight: 7
+difficulty: medium
+context: k8s
+host: null
+namespace: helm-app
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 10
+artifacts:
+  - path: /home/candidate/answers/preview.yaml
+    on: term
+checks_total: 8
+tags: [helm, upgrade, rollback, template, reuse-values, history]

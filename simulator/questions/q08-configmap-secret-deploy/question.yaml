@@ -1,0 +1,16 @@
+id: q08-configmap-secret-deploy
+title: Configure a Deployment with a ConfigMap and a Secret
+domain: workloads
+weight: 5
+difficulty: medium
+context: k8s
+host: null
+namespace: cfg-demo
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 8
+artifacts: []
+checks_total: 9
+tags: [configmap, secret, env, volume, deployment]

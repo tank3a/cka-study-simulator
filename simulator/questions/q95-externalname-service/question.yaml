@@ -1,0 +1,20 @@
+id: q95-externalname-service
+title: ExternalName Services across namespaces
+domain: networking
+weight: 5
+difficulty: easy
+context: k8s
+host: null
+namespace: xn-lab
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 6
+artifacts: []
+checks_total: 7
+tags: [service, externalname, dns, cname]
+concept: headless-externalname
+sub_competency: "Use ClusterIP, NodePort, LoadBalancer service types and endpoints; Understand and use CoreDNS"
+doc: https://kubernetes.io/docs/concepts/services-networking/service/
+note: "Also creates namespace xn-shared. Do not combine with q46 (breaks cluster DNS)."

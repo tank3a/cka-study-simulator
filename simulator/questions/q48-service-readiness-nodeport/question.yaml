@@ -1,0 +1,18 @@
+id: q48-service-readiness-nodeport
+title: NodePort Service has no endpoints
+domain: troubleshooting
+sub_competency: Troubleshoot services and networking
+weight: 6
+difficulty: medium
+context: k8s
+host: null
+namespace: svc-ready
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 9
+conflicts: []
+artifacts: []
+checks_total: 6
+tags: [service, nodeport, endpoints, readinessProbe, named-port]

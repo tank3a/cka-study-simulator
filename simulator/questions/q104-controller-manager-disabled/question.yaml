@@ -1,0 +1,18 @@
+id: q104-controller-manager-disabled
+title: ReplicaSet and Job create no Pods - controllers switched off
+domain: troubleshooting
+sub_competency: Troubleshoot cluster components
+weight: 6
+difficulty: medium
+context: ek8s
+host: ek8s-cp
+namespace: cm-off
+requires: []
+fidelity: high
+destructive: true
+reset: cluster-soft
+time_hint_min: 9
+conflicts: [q37-kubelet-stopped, q39-apiserver-flags-broken, q40-scheduler-down, q103-controller-manager-crash, q107-apiserver-authz-keyfile, q108-scheduler-flags-probe]
+artifacts: []
+checks_total: 6
+tags: [control-plane, kube-controller-manager, static-pod, controllers-flag]

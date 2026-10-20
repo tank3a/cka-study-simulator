@@ -1,0 +1,25 @@
+id: q79-etcd-backup-script
+title: Write a reusable etcd backup script and record snapshot facts
+domain: cluster-architecture
+weight: 6
+difficulty: medium
+context: ek8s
+host: ek8s-cp
+namespace: null
+requires: [etcdctl]
+fidelity: high
+destructive: false
+reset: ns
+conflicts: [q18, q80]   # share ek8s etcd; grade before q18/q80 replace the data. Writes only under /opt/cka and does not change etcd.
+time_hint_min: 10
+artifacts:
+  - path: /opt/cka/etcd-backup.sh
+    on: ek8s-cp
+  - path: /opt/cka/backups/etcd-snap.db
+    on: ek8s-cp
+  - path: /opt/cka/etcd-snap-status.json
+    on: ek8s-cp
+  - path: /opt/cka/etcd-endpoint-status.txt
+    on: ek8s-cp
+checks_total: 8
+tags: [etcd, backup, snapshot, script, etcdctl, etcdutl]

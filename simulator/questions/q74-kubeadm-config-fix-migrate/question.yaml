@@ -1,0 +1,19 @@
+id: q74-kubeadm-config-fix-migrate
+title: Fix and migrate a broken kubeadm init configuration
+domain: cluster-architecture
+weight: 5
+difficulty: medium
+context: ek8s
+host: ek8s-cp
+namespace: null
+requires: []
+fidelity: partial   # kubeadm init is not run; file migration and validation are real
+destructive: false
+reset: ns
+conflicts: []
+time_hint_min: 9
+artifacts:
+  - path: /opt/cka/fixed-init.yaml
+    on: ek8s-cp
+checks_total: 8
+tags: [kubeadm, init, config, migrate, validate, cgroup-driver, pod-cidr]

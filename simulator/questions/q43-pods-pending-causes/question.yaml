@@ -1,0 +1,18 @@
+id: q43-pods-pending-causes
+title: Pending pods - resources, selector, taint and PVC
+domain: troubleshooting
+sub_competency: Troubleshoot clusters and nodes
+weight: 7
+difficulty: medium
+context: k8s
+host: null
+namespace: pending-lab
+requires: []
+fidelity: high
+destructive: true            # taints node k8s-worker; cleanup.sh removes taint/label/StorageClass
+reset: ns
+time_hint_min: 12
+conflicts: [q38-kubelet-config-broken, q12-taints-nodeselector, q13-affinity-tolerations-priority, q14-topology-spread-hpa, q53-daemonset-nodeselector-rolling]   # taints k8s-worker (exam-reserved=q43:NoSchedule) and labels it disktype; node-state questions would mis-schedule. Declared conservatively (no lane-H data)
+artifacts: []
+checks_total: 8
+tags: [pending, scheduling, taints, nodeSelector, requests, pvc, storageclass, events]

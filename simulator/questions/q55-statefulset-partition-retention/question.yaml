@@ -1,0 +1,16 @@
+id: q55-statefulset-partition-retention
+title: Canary a StatefulSet update with a partition and PVC retention policy
+domain: workloads
+weight: 6
+difficulty: hard
+context: k8s
+host: null
+namespace: sts-upd
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 10
+artifacts: []
+checks_total: 7
+tags: [statefulset, rollingupdate, partition, pvc-retention]

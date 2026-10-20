@@ -1,0 +1,20 @@
+id: q96-kube-proxy-mode-rules
+title: Inspect kube-proxy mode and Service rules
+domain: networking
+weight: 6
+difficulty: medium
+context: k8s
+host: null
+namespace: kp-lab
+requires: []
+fidelity: partial
+destructive: false
+reset: ns
+time_hint_min: 8
+artifacts: []
+checks_total: 5
+tags: [kube-proxy, iptables, service, configmap]
+concept: kube-proxy
+sub_competency: "Use ClusterIP, NodePort, LoadBalancer service types and endpoints"
+doc: https://kubernetes.io/docs/concepts/services-networking/service/
+note: "kind kube-proxy runs in iptables mode inside the node containers; rule inspection is representative, but the ConfigMap layout and ssh to kind nodes are kind-specific. Read-only."

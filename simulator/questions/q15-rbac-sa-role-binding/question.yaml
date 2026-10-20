@@ -1,0 +1,18 @@
+id: q15-rbac-sa-role-binding
+title: Namespaced Role and RoleBinding for a CI ServiceAccount
+domain: cluster-architecture
+weight: 6
+difficulty: easy
+context: k8s
+host: null
+namespace: rbac-dev
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 6
+artifacts:
+  - path: /home/candidate/answers/q15-delete.txt
+    on: term
+checks_total: 10
+tags: [rbac, serviceaccount, role, rolebinding, can-i]

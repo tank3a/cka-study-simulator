@@ -1,0 +1,18 @@
+id: q16-rbac-audit-least-privilege
+title: Audit and tighten permissions of a ServiceAccount
+domain: cluster-architecture
+weight: 6
+difficulty: medium
+context: k8s
+host: null
+namespace: rbac-audit
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 9
+artifacts:
+  - path: /home/candidate/answers/q16-bindings.txt
+    on: term
+checks_total: 11
+tags: [rbac, clusterrolebinding, audit, least-privilege, can-i]

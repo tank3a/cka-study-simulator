@@ -1,0 +1,20 @@
+id: q98-gateway-allowed-routes-namespaces
+title: Gateway listener limited to labelled namespaces
+domain: networking
+weight: 8
+difficulty: hard
+context: k8s
+host: null
+namespace: gw-multi
+requires: [gateway-api]
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 12
+artifacts: []
+checks_total: 8
+tags: [gateway-api, gateway, gatewayclass, allowedroutes, cross-namespace]
+concept: gateway-gatewayclass
+sub_competency: "Use the Gateway API to manage Ingress traffic"
+doc: https://gateway-api.sigs.k8s.io/guides/user-guides/http-routing/
+note: "Uses namespaces gw-multi, gw-team-a, gw-team-b. Assumes GatewayClass nginx (NGINX Gateway Fabric)."

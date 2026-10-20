@@ -1,0 +1,17 @@
+id: q87-operator-install-rbac-leader
+title: Install an operator bundle and give it the RBAC it needs
+domain: cluster-architecture
+weight: 6
+difficulty: hard
+context: k8s
+host: null
+namespace: ops-system
+requires: []
+fidelity: partial   # the operator Deployment is a nginx stand-in (no real controller loop); installation steps, CRD, RBAC and leader-election permissions are real and graded
+destructive: false
+reset: ns
+conflicts: []
+time_hint_min: 14
+artifacts: []
+checks_total: 10
+tags: [operator, crd, rbac, serviceaccount, leader-election, lease, install]

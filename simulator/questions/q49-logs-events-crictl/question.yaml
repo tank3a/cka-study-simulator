@@ -1,0 +1,28 @@
+id: q49-logs-events-crictl
+title: Collect container logs, events and crictl data
+domain: troubleshooting
+sub_competency: Manage and evaluate container output streams
+weight: 7
+difficulty: medium
+context: k8s
+host: k8s-node1
+namespace: logs-lab
+requires: [metrics-server]
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 10
+conflicts: []
+artifacts:
+  - path: /home/candidate/q49/shipper.log
+    on: term
+  - path: /home/candidate/q49/crasher-previous.log
+    on: term
+  - path: /home/candidate/q49/warnings.txt
+    on: term
+  - path: /home/candidate/q49/top.txt
+    on: term
+  - path: /opt/cka/q49-shipper-id.txt
+    on: k8s-node1
+checks_total: 8
+tags: [logs, events, crictl, kubectl-top, multi-container, previous]

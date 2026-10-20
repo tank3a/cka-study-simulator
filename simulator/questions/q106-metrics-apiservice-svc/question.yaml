@@ -1,0 +1,22 @@
+id: q106-metrics-apiservice-svc
+title: Metrics API unreachable - Service port mismatch
+domain: troubleshooting
+sub_competency: Monitor cluster and application resource usage
+weight: 6
+difficulty: medium
+context: k8s
+host: null
+namespace: null
+requires: [metrics-server]
+fidelity: high
+destructive: true
+reset: ns
+time_hint_min: 9
+conflicts: [q50-kubectl-top-usage, q09-hpa-autoscale, q14-topology-spread-hpa, q49-logs-events-crictl, q105-metrics-server-tls]
+artifacts:
+  - path: /home/candidate/q106/cause.txt
+    on: term
+  - path: /home/candidate/q106/pods-top.txt
+    on: term
+checks_total: 6
+tags: [metrics-server, apiservice, service, targetPort, kubectl-top]

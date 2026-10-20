@@ -1,0 +1,16 @@
+id: q59-pdb-blocks-drain-fix
+title: Fix a PodDisruptionBudget that blocks every eviction
+domain: workloads
+weight: 6
+difficulty: medium
+context: k8s
+host: null
+namespace: pdb-b
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 7
+artifacts: []
+checks_total: 5
+tags: [poddisruptionbudget, maxunavailable, unhealthypodevictionpolicy, drain]

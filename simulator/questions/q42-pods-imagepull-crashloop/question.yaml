@@ -1,0 +1,18 @@
+id: q42-pods-imagepull-crashloop
+title: Three broken Deployments in namespace outage
+domain: troubleshooting
+sub_competency: Manage and evaluate container output streams
+weight: 6
+difficulty: medium
+context: k8s
+host: null
+namespace: outage
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 10
+conflicts: []
+artifacts: []
+checks_total: 6
+tags: [imagepullbackoff, crashloopbackoff, logs, describe, probes]

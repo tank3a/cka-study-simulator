@@ -1,0 +1,16 @@
+id: q14-topology-spread-hpa
+title: Topology spread constraints, rollout strategy and autoscaling
+domain: workloads
+weight: 7
+difficulty: hard
+context: k8s
+host: null
+namespace: spread-demo
+requires: [metrics-server]
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 12
+artifacts: []
+checks_total: 8
+tags: [topologyspreadconstraints, rolling-update, hpa, resources, scheduling]

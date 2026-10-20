@@ -1,0 +1,17 @@
+id: q78-drain-cordon-maintenance
+title: Take a worker node out for maintenance (stale cordon, drain with flags)
+domain: cluster-architecture
+weight: 6
+difficulty: medium
+context: k8s
+host: null
+namespace: drain-lab
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+conflicts: [q91]   # changes the schedulable state of k8s-worker and k8s-worker2; q91 labels k8s-worker. cleanup uncordons both
+time_hint_min: 8
+artifacts: []
+checks_total: 6
+tags: [drain, cordon, uncordon, daemonset, emptydir, maintenance]

@@ -1,0 +1,23 @@
+id: q77-kubeadm-upgrade-plan-runbook
+title: Plan a kubeadm upgrade, dry-run the drain and write the worker runbook
+domain: cluster-architecture
+weight: 4
+difficulty: medium
+context: ek8s
+host: ek8s-cp
+namespace: null
+requires: []
+fidelity: partial   # no real upgrade is performed (q19 does that on ik8s); plan output, server-side drain dry-run and the runbook text are graded
+destructive: false
+reset: ns
+conflicts: []
+time_hint_min: 8
+artifacts:
+  - path: /opt/cka/upgrade-plan.txt
+    on: ek8s-cp
+  - path: /opt/cka/drain-dryrun.txt
+    on: ek8s-cp
+  - path: /opt/cka/upgrade-runbook.txt
+    on: ek8s-cp
+checks_total: 6
+tags: [kubeadm, upgrade, plan, drain, runbook]

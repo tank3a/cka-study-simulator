@@ -1,0 +1,18 @@
+id: q51-pvc-expand-two-classes
+title: Expand one of two PVCs (only the right StorageClass may change)
+domain: storage
+weight: 5
+difficulty: medium
+context: k8s
+host: null
+namespace: expand2
+requires: []
+fidelity: partial
+destructive: false
+reset: ns
+time_hint_min: 6
+artifacts:
+  - path: /home/candidate/q51.txt
+    on: term
+checks_total: 6
+tags: [pvc, storageclass, allowvolumeexpansion]

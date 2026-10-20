@@ -1,0 +1,21 @@
+id: q71-kubeconfig-build-user
+title: Build a kubeconfig file for an existing user certificate
+domain: cluster-architecture
+weight: 5
+difficulty: medium
+context: k8s
+host: null
+namespace: kcfg
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+conflicts: []
+time_hint_min: 9
+artifacts:
+  - path: /home/candidate/kc/ravi.kubeconfig
+    on: term
+  - path: /home/candidate/answers/q71-contexts.txt
+    on: term
+checks_total: 10
+tags: [kubeconfig, contexts, credentials, embed-certs, csr]

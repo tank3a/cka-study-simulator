@@ -1,0 +1,16 @@
+id: q66-resourcequota-object-counts
+title: ResourceQuota on object counts and storage with rejected requests
+domain: workloads
+weight: 6
+difficulty: hard
+context: k8s
+host: null
+namespace: quota-b
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 10
+artifacts: []
+checks_total: 9
+tags: [resourcequota, count, nodeports, requests.storage, pvc]

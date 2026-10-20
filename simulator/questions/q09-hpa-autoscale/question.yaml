@@ -1,0 +1,16 @@
+id: q09-hpa-autoscale
+title: Configure a HorizontalPodAutoscaler
+domain: workloads
+weight: 6
+difficulty: medium
+context: k8s
+host: null
+namespace: hpa-demo
+requires: [metrics-server]
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 8
+artifacts: []
+checks_total: 8
+tags: [hpa, autoscaling, resources, metrics-server, behavior]

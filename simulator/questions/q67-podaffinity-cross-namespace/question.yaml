@@ -1,0 +1,16 @@
+id: q67-podaffinity-cross-namespace
+title: Pod affinity to colocate and anti-affinity across namespaces
+domain: workloads
+weight: 7
+difficulty: hard
+context: k8s
+host: null
+namespace: aff2
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 12
+artifacts: []
+checks_total: 8
+tags: [podaffinity, podantiaffinity, namespaces, topologykey, scheduling]

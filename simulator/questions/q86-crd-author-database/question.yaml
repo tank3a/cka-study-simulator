@@ -1,0 +1,19 @@
+id: q86-crd-author-database
+title: Author a CustomResourceDefinition with validation, defaults and printer column
+domain: cluster-architecture
+weight: 6
+difficulty: hard
+context: k8s
+host: null
+namespace: crd-author
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+conflicts: []
+time_hint_min: 14
+artifacts:
+  - path: /home/candidate/crd/database-crd.yaml
+    on: term
+checks_total: 10
+tags: [crd, authoring, openAPIV3Schema, enum, default, subresource-status, printer-columns]

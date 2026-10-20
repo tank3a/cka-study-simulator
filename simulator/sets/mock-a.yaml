@@ -1,0 +1,19 @@
+name: mock-a
+duration_min: 120
+questions:
+  - q03-pv-reclaim-accessmode
+  - q05-volume-types-block
+  - q102-ingress-class-controller-match
+  - q109-exec-multicontainer
+  - q13-affinity-tolerations-priority
+  - q16-rbac-audit-least-privilege
+  - q20-kubeadm-certs-token-join
+  - q21-ha-topology-report
+  - q24-kustomize-overlay-patch
+  - q33-ingress-to-gateway-migrate
+  - q40-scheduler-down
+  - q48-service-readiness-nodeport
+  - q49-logs-events-crictl
+  - q52-rollback-to-named-revision
+  - q65-resourcequota-compute-deploy
+  - q96-kube-proxy-mode-rules

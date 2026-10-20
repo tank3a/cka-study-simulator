@@ -1,0 +1,16 @@
+id: q13-affinity-tolerations-priority
+title: Node affinity, pod anti-affinity, DaemonSet toleration and a non-preempting PriorityClass
+domain: workloads
+weight: 8
+difficulty: hard
+context: k8s
+host: null
+namespace: affinity-demo
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 14
+artifacts: []
+checks_total: 11
+tags: [nodeaffinity, podantiaffinity, tolerations, daemonset, priorityclass, preemption]

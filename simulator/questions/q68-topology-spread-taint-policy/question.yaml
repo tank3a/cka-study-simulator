@@ -1,0 +1,16 @@
+id: q68-topology-spread-taint-policy
+title: Fix a topology spread constraint that leaves Pods Pending
+domain: workloads
+weight: 6
+difficulty: hard
+context: k8s
+host: null
+namespace: spread2
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 10
+artifacts: []
+checks_total: 7
+tags: [topologyspreadconstraints, maxskew, whenunsatisfiable, nodetaintspolicy, pending]

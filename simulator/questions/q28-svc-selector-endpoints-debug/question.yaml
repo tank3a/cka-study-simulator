@@ -1,0 +1,21 @@
+id: q28-svc-selector-endpoints-debug
+title: Service has no endpoints
+domain: troubleshooting
+weight: 6
+difficulty: medium
+context: k8s
+host: null
+namespace: svc-debug
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 7
+artifacts:
+  - path: /home/candidate/api-endpoints.txt
+    on: term
+checks_total: 7
+tags: [service, endpoints, endpointslice, troubleshooting, selector]
+concept: services
+sub_competency: "Troubleshoot services and networking; use endpoints"
+doc: https://kubernetes.io/docs/tasks/debug/debug-application/debug-service/

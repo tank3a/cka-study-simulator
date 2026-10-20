@@ -1,0 +1,20 @@
+id: q100-ingress-default-backend-wildcard
+title: Ingress with default backend, wildcard host and Exact path
+domain: networking
+weight: 5
+difficulty: medium
+context: k8s
+host: null
+namespace: ing-def
+requires: [ingress]
+fidelity: partial
+destructive: false
+reset: ns
+time_hint_min: 7
+artifacts: []
+checks_total: 5
+tags: [ingress, defaultbackend, wildcard, pathtype, optional]
+concept: ingress
+sub_competency: "Know how to use Ingress controllers and Ingress resources"
+doc: https://kubernetes.io/docs/concepts/services-networking/ingress/
+note: "ingress-nginx is retired (Mar 2026). Spec checks always run; the live HTTP check only runs if an ingress-nginx addon is installed. Low-fidelity, keep out of default sets."

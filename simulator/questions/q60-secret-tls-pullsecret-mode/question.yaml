@@ -1,0 +1,16 @@
+id: q60-secret-tls-pullsecret-mode
+title: Secrets: tls, docker-registry and generic with file mode and env
+domain: workloads
+weight: 7
+difficulty: medium
+context: k8s
+host: null
+namespace: secret-demo
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 12
+artifacts: []
+checks_total: 9
+tags: [secret, tls, dockerconfigjson, defaultmode, secretkeyref, imagepullsecrets]

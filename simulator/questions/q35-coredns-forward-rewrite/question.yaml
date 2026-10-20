@@ -1,0 +1,21 @@
+id: q35-coredns-forward-rewrite
+title: Customize the CoreDNS Corefile
+domain: networking
+weight: 7
+difficulty: hard
+context: k8s
+host: null
+namespace: dns-lab
+requires: []
+fidelity: high
+destructive: true
+reset: ns
+time_hint_min: 10
+artifacts: []
+checks_total: 8
+conflicts: [q46-coredns-corefile]  # both edit kube-system/coredns
+tags: [coredns, corefile, forward, rewrite, dns]
+concept: coredns
+sub_competency: "Understand and use CoreDNS"
+doc: https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/
+note: "Edits the kube-system ConfigMap coredns (additive). cleanup.sh restores the original Corefile from a backup ConfigMap in dns-lab; always run cleanup on reset."

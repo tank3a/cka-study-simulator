@@ -1,0 +1,16 @@
+id: q62-vpa-fix-targetref-sidecar
+title: Repair a VPA: wrong target, per-container policy and Initial mode
+domain: workloads
+weight: 5
+difficulty: hard
+context: k8s
+host: null
+namespace: vpa-b
+requires: []
+fidelity: low
+destructive: false
+reset: ns
+time_hint_min: 9
+artifacts: []
+checks_total: 7
+tags: [vpa, targetref, containerpolicies, controlledvalues, initial]

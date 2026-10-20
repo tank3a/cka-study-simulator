@@ -1,0 +1,18 @@
+id: q07-rollout-rollback
+title: Roll back a failed update and perform a controlled rolling update
+domain: workloads
+weight: 6
+difficulty: medium
+context: k8s
+host: null
+namespace: rollout-demo
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 8
+artifacts:
+  - path: /home/candidate/web-history.txt
+    on: term
+checks_total: 8
+tags: [deployment, rolling-update, rollback, rollout-history, strategy]

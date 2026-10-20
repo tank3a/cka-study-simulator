@@ -1,0 +1,325 @@
+#!/usr/bin/env bash
+# sim: CKA simulator infrastructure. Everything it creates is prefixed/named: clusters k8s|ek8s|ik8s, containers exam-term|exam-assets,
+# images cka-sim/*, volume cka-sim-registry, docker network "kind" (shared with kind; only removed if we created it and it is unused).
+set -uo pipefail
+SIM_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+export SIM_ROOT LIB="$SIM_ROOT/lib"
+source "$LIB/common.sh"
+ST="$SIM_ROOT/state"; KCD="$ST/kc"; SHARE="$ST/share"; BASE="$ST/baseline"; AC="$SIM_ROOT/assets-cache"
+NODE_IMG=cka-sim/node:v1.34.0
+mkdir -p "$KCD" "$SHARE" "$BASE" "$ST/logs"
+say() { printf '\033[1;36m==> %s\033[0m\n' "$*" >&2; }
+die() { printf '\033[1;31merror: %s\033[0m\n' "$*" >&2; exit 1; }
+exists_cluster() { kind get clusters 2>/dev/null | grep -qx "$1"; }
+cluster_nodes() { docker ps -a --filter "label=io.x-k8s.kind.cluster=$1" --format '{{.Names}}' | sort; }
+ssh_keys() { [ -f "$ST/ssh/id_ed25519" ] || { mkdir -p "$ST/ssh"; ssh-keygen -q -t ed25519 -N '' -C cka-sim -f "$ST/ssh/id_ed25519"; }; cp "$ST/ssh/id_ed25519.pub" "$SIM_ROOT/images/node/authorized_keys"; }
+
+build_images() {
+  ssh_keys
+  say "building images (cka-sim/node, cka-sim/term, cka-sim/assets)"
+  docker build -q -t "$NODE_IMG" "$SIM_ROOT/images/node" >/dev/null || die "node image build failed"
+  docker build -q -t cka-sim/term "$SIM_ROOT/images/term" >/dev/null || die "term image build failed"
+  docker build -q -t cka-sim/assets "$SIM_ROOT/images/assets" >/dev/null || die "assets image build failed"
+}
+need_images() { docker image inspect "$NODE_IMG" cka-sim/term cka-sim/assets >/dev/null 2>&1 || build_images; }
+
+ensure_assets_files() {
+  [ -s "$AC/manifests/gateway-api-crds.yaml" ] && [ -s "$AC/charts/index.yaml" ] || { say "fetching offline assets (one-time, needs internet)"; "$SIM_ROOT/images/assets/build-assets.sh" || die "asset build failed"; }
+}
+start_assets() {
+  docker network inspect kind >/dev/null 2>&1 || docker network create kind >/dev/null
+  if [ "$(docker inspect -f '{{.State.Running}}' exam-assets 2>/dev/null)" != true ]; then
+    docker rm -f exam-assets >/dev/null 2>&1
+    say "starting exam-assets (charts/manifests on :80, registry on :5000; host 127.0.0.1:5055)"
+    docker run -d --name exam-assets --network kind --network-alias exam-assets --restart unless-stopped \
+      -p 127.0.0.1:5055:5000 -v "$AC:/srv:ro" -v cka-sim-registry:/var/lib/registry cka-sim/assets >/dev/null || die "assets start failed"
+  fi
+}
+
+write_admin_kubeconfig() { # host-side kubeconfig with contexts k8s/ek8s/ik8s; atomic
+  local files="" c
+  for c in k8s ek8s ik8s; do
+    exists_cluster $c || continue
+    kind get kubeconfig --name $c > "$KCD/$c.yaml" 2>/dev/null
+    kubectl --kubeconfig "$KCD/$c.yaml" config rename-context kind-$c $c >/dev/null 2>&1
+    files="$files:$KCD/$c.yaml"
+  done
+  [ -n "$files" ] || return 0
+  KUBECONFIG="${files#:}" kubectl config view --flatten > "$ST/admin.kubeconfig.new" && mv "$ST/admin.kubeconfig.new" "$ST/admin.kubeconfig"
+  chmod 600 "$ST/admin.kubeconfig"
+}
+
+make_alias_user() { # name -> client cert user in $KCD/internal-<cluster>.yaml built by caller; prints nothing
+  local user=$1 d="$ST/users"; mkdir -p "$d"
+  openssl genrsa -out "$d/$user.key" 2048 2>/dev/null
+  openssl req -new -key "$d/$user.key" -subj "/CN=$user/O=cka-sim" -out "$d/$user.csr" 2>/dev/null
+  kc k8s delete csr "$user" >/dev/null 2>&1
+  kc k8s apply -f - >/dev/null <<YAML
+apiVersion: certificates.k8s.io/v1
+kind: CertificateSigningRequest
+metadata: {name: $user}
+spec:
+  request: $(base64 < "$d/$user.csr" | tr -d '\n')
+  signerName: kubernetes.io/kube-apiserver-client
+  expirationSeconds: 31536000
+  usages: [client auth]
+YAML
+  kc k8s certificate approve "$user" >/dev/null
+  local i; for i in 1 2 3 4 5 6 7 8 9 10; do
+    kc k8s get csr "$user" -o jsonpath='{.status.certificate}' | base64 -d > "$d/$user.crt" 2>/dev/null; [ -s "$d/$user.crt" ] && break; sleep 1; done
+  kc k8s create clusterrolebinding "sim-$user" --clusterrole=cluster-admin --user="$user" --dry-run=client -o yaml | kc k8s apply -f - >/dev/null
+  kc k8s label clusterrolebinding "sim-$user" exam.sim=infra --overwrite >/dev/null
+}
+
+write_term_kubeconfig() {
+  local files="" c f
+  for c in k8s ek8s ik8s; do
+    exists_cluster $c || continue
+    kind get kubeconfig --internal --name $c > "$KCD/int-$c.yaml"
+    kubectl --kubeconfig "$KCD/int-$c.yaml" config rename-context kind-$c $c >/dev/null 2>&1
+    files="$files:$KCD/int-$c.yaml"
+  done
+  [ -n "$files" ] || return 0
+  f="$KCD/term.yaml"
+  KUBECONFIG="${files#:}" kubectl config view --flatten > "$f"
+  if exists_cluster k8s; then
+    local u cl="kind-k8s"
+    for u in mk8s-admin wk8s-admin; do
+      make_alias_user $u
+      kubectl --kubeconfig "$f" config set-credentials $u --client-certificate="$ST/users/$u.crt" --client-key="$ST/users/$u.key" --embed-certs=true >/dev/null
+    done
+    kubectl --kubeconfig "$f" config set-context mk8s --cluster=kind-k8s --user=mk8s-admin >/dev/null
+    kubectl --kubeconfig "$f" config set-context wk8s --cluster=kind-k8s --user=wk8s-admin >/dev/null
+  fi
+  kubectl --kubeconfig "$f" config use-context k8s >/dev/null 2>&1
+  if [ "$(docker inspect -f '{{.State.Running}}' exam-term 2>/dev/null)" = true ]; then
+    docker cp "$f" exam-term:/home/candidate/.kube/config && docker exec -u 0 exam-term chown candidate:candidate /home/candidate/.kube/config
+  fi
+}
+
+start_term() {
+  if [ "$(docker inspect -f '{{.State.Running}}' exam-term 2>/dev/null)" != true ]; then
+    docker rm -f exam-term >/dev/null 2>&1
+    say "starting exam-term"
+    docker run -d --name exam-term --network kind --hostname cka-term --cap-add NET_ADMIN --restart unless-stopped \
+      -v "$SHARE:/var/lib/exam" -v "$SIM_ROOT/bin/exam:/opt/exam/exam:ro" -v "$SIM_ROOT/lib:/opt/exam/lib:ro" cka-sim/term >/dev/null || die "term start failed"
+    docker exec -u 0 exam-term ln -sf /opt/exam/exam /usr/local/bin/exam
+    docker exec -u 0 exam-term chown candidate:candidate /var/lib/exam
+    docker cp "$ST/ssh/id_ed25519" exam-term:/home/candidate/.ssh/id_ed25519
+    cat > "$ST/sshconfig" <<'CFG'
+Host k8s-cp
+  HostName k8s-control-plane
+Host k8s-node1
+  HostName k8s-worker
+Host k8s-node2
+  HostName k8s-worker2
+Host ek8s-cp
+  HostName ek8s-control-plane
+Host ek8s-node1
+  HostName ek8s-worker
+Host ik8s-cp
+  HostName ik8s-control-plane
+Host ik8s-node1
+  HostName ik8s-worker
+Host *
+  User candidate
+  IdentityFile ~/.ssh/id_ed25519
+  StrictHostKeyChecking no
+  UserKnownHostsFile /dev/null
+  LogLevel ERROR
+CFG
+    docker cp "$ST/sshconfig" exam-term:/home/candidate/.ssh/config
+    docker exec -u 0 exam-term bash -c 'chown -R candidate:candidate /home/candidate/.ssh && chmod 600 /home/candidate/.ssh/id_ed25519 /home/candidate/.ssh/config'
+  fi
+}
+
+create_cluster() {
+  local c=$1
+  if exists_cluster $c; then say "cluster $c already exists"; return 0; fi
+  say "creating kind cluster $c"
+  kind create cluster --config "$SIM_ROOT/clusters/$c.yaml" --kubeconfig "$KCD/$c.yaml" $([ $c = ik8s ] || echo --wait 180s) >"$ST/logs/kind-$c.log" 2>&1 || { tail -20 "$ST/logs/kind-$c.log" >&2; die "kind create $c failed"; }
+}
+
+wait_nodes() { local c=$1 i; for i in $(seq 1 60); do
+    [ -n "$(kc $c get nodes --no-headers 2>/dev/null)" ] && ! kc $c get nodes --no-headers 2>/dev/null | grep -qv ' Ready' && return 0; sleep 3; done; return 1; }
+
+addons_common() { # on k8s/ek8s: metrics-server
+  local c=$1
+  say "[$c] metrics-server"
+  sed 's#- --metric-resolution=15s#- --metric-resolution=15s\n        - --kubelet-insecure-tls#' "$AC/manifests/metrics-server.yaml" | kc $c apply -f - >/dev/null
+}
+addons_k8s() {
+  local c=k8s
+  say "[$c] Gateway API CRDs + NGINX Gateway Fabric (NodePort)"
+  kc $c apply --server-side --force-conflicts -f "$AC/manifests/gateway-api-crds.yaml" >/dev/null
+  local chart; chart=$(ls "$AC"/charts/nginx-gateway-fabric-*.tgz | head -1)
+  helm --kubeconfig "$ST/admin.kubeconfig" --kube-context $c upgrade --install ngf "$chart" -n nginx-gateway --create-namespace \
+    --set nginx.service.type=NodePort --set nginx.service.externalTrafficPolicy=Cluster --wait --timeout 4m >"$ST/logs/ngf.log" 2>&1 || { tail "$ST/logs/ngf.log" >&2; log "WARN: NGF install failed"; }
+  say "[$c] cert-manager CRDs (for CRD tasks)"
+  kc $c apply --server-side -f "$AC/manifests/cert-manager.crds.yaml" >/dev/null 2>&1 || log "WARN cert-manager CRDs not applied"
+  kc $c label crd -l app.kubernetes.io/name=cert-manager exam.sim=infra --overwrite >/dev/null 2>&1
+}
+
+netpol_test() { # prints PASS/FAIL; k8s only
+  local c=${1:-k8s} ns=sim-netpol-$RANDOM r
+  kc $c create ns $ns >/dev/null 2>&1
+  kc $c -n $ns run srv --image=nginx:1.27 --port=80 --labels=app=srv >/dev/null 2>&1
+  kc $c -n $ns run cli --image=busybox:1.37 --restart=Never -- sleep 600 >/dev/null 2>&1
+  kc $c -n $ns expose pod srv --port=80 >/dev/null 2>&1
+  kc $c -n $ns wait --for=condition=Ready pod/srv pod/cli --timeout=120s >/dev/null 2>&1
+  r=$(kc $c -n $ns exec cli -- wget -qO- -T3 http://srv 2>&1 | head -c 20)
+  [ -n "$r" ] && [[ "$r" != wget* ]] || { kc $c delete ns $ns --wait=false >/dev/null 2>&1; echo "FAIL(baseline connectivity broken)"; return 1; }
+  kc $c -n $ns apply -f - >/dev/null <<'YAML'
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: {name: deny-all}
+spec: {podSelector: {}, policyTypes: [Ingress]}
+YAML
+  local i ok=1; for i in 1 2 3 4 5 6; do sleep 2
+    kc $c -n $ns exec cli -- wget -qO- -T3 http://srv >/dev/null 2>&1 || { ok=0; break; }; done
+  kc $c delete ns $ns --wait=false >/dev/null 2>&1
+  [ $ok = 0 ] && { echo PASS; return 0; } || { echo "FAIL(policy not enforced)"; return 1; }
+}
+
+snapshot() {
+  local c n
+  for c in ${1:-k8s ek8s ik8s}; do
+    exists_cluster $c || continue
+    mkdir -p "$BASE/$c"
+    for n in $(cluster_nodes $c); do
+      docker exec "$n" bash -c 'tar czf - -C / etc/kubernetes var/lib/kubelet/config.yaml etc/systemd/system/kubelet.service.d etc/containerd/config.toml 2>/dev/null' > "$BASE/$c/$n.tgz"
+      if docker exec "$n" test -d /var/lib/etcd/member 2>/dev/null; then
+        docker exec "$n" bash -c 'tar czf - -C / var/lib/etcd 2>/dev/null' > "$BASE/$c/$n.etcd.tgz"
+      fi
+    done
+    kc $c get ns,clusterroles,sc,pv,crd -o name 2>/dev/null | sort > "$BASE/$c/cluster-objects.txt"
+    say "snapshot $c saved ($(ls "$BASE/$c" | wc -l | tr -d ' ') files)"
+  done
+}
+
+# restore node-level baseline files. usage: restore_node <node-or-alias> [--etcd]
+restore_node() {
+  local n; n=$(resolve_node "$1"); local etcd=${2:-}
+  local c=${n%%-*}; local tgz="$BASE/$c/$n.tgz"
+  [ -s "$tgz" ] || die "no baseline for $n (run: sim snapshot)"
+  say "restoring baseline of $n${etcd:+ (+etcd)}"
+  docker exec "$n" bash -c 'systemctl stop kubelet; crictl pods -q 2>/dev/null | xargs -r crictl rmp -f >/dev/null 2>&1; true'
+  docker exec "$n" bash -c 'rm -rf /etc/kubernetes/manifests /etc/systemd/system/kubelet.service.d; systemctl unmask kubelet 2>/dev/null; true'
+  [ "$etcd" = --etcd ] && [ -s "$BASE/$c/$n.etcd.tgz" ] && docker exec "$n" bash -c 'rm -rf /var/lib/etcd /var/lib/etcd-restore'
+  docker exec -i "$n" tar xzf - -C / < "$tgz"
+  [ "$etcd" = --etcd ] && [ -s "$BASE/$c/$n.etcd.tgz" ] && docker exec -i "$n" tar xzf - -C / < "$BASE/$c/$n.etcd.tgz"
+  docker exec "$n" bash -c 'systemctl daemon-reload; systemctl enable kubelet >/dev/null 2>&1; systemctl restart kubelet'
+  local i; for i in $(seq 1 40); do kc "$c" get --raw=/readyz >/dev/null 2>&1 && break; sleep 3; done
+  # uncordon and drop taints added by tasks
+  kc "$c" uncordon "$n" >/dev/null 2>&1
+  # kindnet is recreated by the pod wipe above and can write another node's CIDR into this node's CNI config; recycle it until they agree
+  local want have kp
+  for i in 1 2 3; do
+    sleep 8
+    want=$(kc "$c" get node "$n" -o jsonpath='{.spec.podCIDR}' 2>/dev/null); [ -n "$want" ] || break
+    have=$(docker exec "$n" sh -c 'grep -o "\"subnet\": *\"[^\"]*\"" /etc/cni/net.d/10-kindnet.conflist 2>/dev/null' | head -1 | sed 's/.*: *"\(.*\)"/\1/')
+    [ -z "$have" ] || [ "$have" = "$want" ] && break
+    kp=$(kc "$c" -n kube-system get pods -l app=kindnet --field-selector spec.nodeName="$n" -o name 2>/dev/null | head -1)
+    [ -n "$kp" ] && kc "$c" -n kube-system delete "$kp" --wait=true >/dev/null 2>&1
+  done
+  case "$n" in *control-plane) ;; *) kc "$c" taint nodes "$n" $(kc "$c" get node "$n" -o jsonpath='{range .spec.taints[*]}{.key}-{" "}{end}' 2>/dev/null) >/dev/null 2>&1;; esac
+}
+
+cmd_up() {
+  local want="${*:-k8s ek8s}"
+  command -v kind kubectl helm docker >/dev/null || die "need kind kubectl helm docker on PATH"
+  docker info >/dev/null 2>&1 || die "docker not running"
+  need_images; ensure_assets_files; start_assets
+  local c
+  for c in $want; do
+    create_cluster $c
+  done
+  write_admin_kubeconfig
+  for c in $want; do
+    [ $c = ik8s ] || wait_nodes $c || log "WARN: nodes of $c not all Ready"
+    case $c in
+      k8s)  addons_common k8s; addons_k8s;;
+      ek8s) addons_common ek8s;;
+      ik8s) : ;;
+    esac
+  done
+  start_term
+  write_term_kubeconfig
+  for c in $want; do snapshot $c; done
+  if printf '%s' "$want" | grep -qw k8s; then say "NetworkPolicy self-test: $(netpol_test k8s)"; fi
+  say "ready. Open the exam terminal with:  bin/sim term     then run:  exam start"
+}
+
+cmd_down() {
+  local t="${1:-all}" c
+  case $t in
+    all) for c in k8s ek8s ik8s; do exists_cluster $c && { say "deleting cluster $c"; kind delete cluster --name $c >/dev/null 2>&1; }; done
+         docker rm -f exam-term exam-assets >/dev/null 2>&1; rm -f "$ST/admin.kubeconfig"; say "removed clusters and exam-term/exam-assets (volume cka-sim-registry kept)";;
+    k8s|ek8s|ik8s) exists_cluster $t && kind delete cluster --name $t >/dev/null 2>&1; write_admin_kubeconfig; write_term_kubeconfig; say "deleted $t";;
+    *) die "usage: sim down [k8s|ek8s|ik8s|all]";;
+  esac
+}
+
+cmd_status() {
+  local c
+  for c in k8s ek8s ik8s; do
+    if exists_cluster $c; then printf '%-5s up    ' $c; kc $c get nodes --no-headers 2>/dev/null | awk '{printf "%s(%s) ",$1,$2}'; echo
+    else printf '%-5s down\n' $c; fi
+  done
+  for c in exam-term exam-assets; do printf '%-12s %s\n' $c "$(docker inspect -f '{{.State.Status}}' $c 2>/dev/null || echo missing)"; done
+  [ -s "$ST/admin.kubeconfig" ] && echo "admin kubeconfig: $ST/admin.kubeconfig" || echo "admin kubeconfig: missing"
+}
+
+cmd_doctor() {
+  local c bad=0 n
+  ok() { printf '  [ok]   %s\n' "$*"; }; nok() { printf '  [FAIL] %s\n' "$*"; bad=1; }
+  docker info >/dev/null 2>&1 && ok "docker running" || { nok "docker not running"; exit 1; }
+  for c in exam-term exam-assets; do [ "$(docker inspect -f '{{.State.Running}}' $c 2>/dev/null)" = true ] && ok "$c running" || nok "$c not running"; done
+  for c in k8s ek8s ik8s; do exists_cluster $c || continue
+    kc $c get --raw=/readyz >/dev/null 2>&1 && ok "$c apiserver ready" || nok "$c apiserver not ready"
+    kc $c get nodes --no-headers 2>/dev/null | grep -qv ' Ready' && nok "$c has NotReady nodes" || ok "$c nodes Ready"
+    for n in $(cluster_nodes $c); do docker exec "$n" systemctl is-active ssh >/dev/null 2>&1 && ok "$n sshd active" || nok "$n sshd inactive"; done
+    kc $c get nodes -o jsonpath='{range .items[*]}{.metadata.name}{" "}{.spec.unschedulable}{"\n"}{end}' | grep -q ' true' && nok "$c has cordoned nodes (drift)" || true
+    if [ -s "$BASE/$c/cluster-objects.txt" ]; then
+      kc $c get ns,clusterroles,sc,pv,crd -o name 2>/dev/null | sort | diff <(cat "$BASE/$c/cluster-objects.txt") - | grep '^[<>]' | grep -v 'sim-netpol-' | head -8 | sed 's/^/         drift: /'
+    fi
+  done
+  exists_cluster k8s && { kc k8s top nodes >/dev/null 2>&1 && ok "k8s metrics-server" || nok "k8s metrics-server not serving"
+    kc k8s get gatewayclass nginx -o jsonpath='{.status.conditions[?(@.type=="Accepted")].status}' 2>/dev/null | grep -q True && ok "k8s GatewayClass nginx accepted" || nok "k8s GatewayClass nginx missing"
+    kc k8s get sc standard >/dev/null 2>&1 && ok "k8s StorageClass standard" || nok "StorageClass standard missing"
+    r=$(netpol_test k8s); [ "$r" = PASS ] && ok "NetworkPolicy enforced" || nok "NetworkPolicy: $r"; }
+  docker exec -u candidate exam-term bash -lc 'ssh k8s-cp true' >/dev/null 2>&1 && ok "exam-term -> ssh k8s-cp" || nok "ssh from exam-term to k8s-cp failed"
+  docker exec -u candidate exam-term curl -s -m3 -o /dev/null https://example.com && nok "exam-term has internet (egress block off)" || ok "exam-term egress blocked"
+  exit $bad
+}
+
+cmd_term() {
+  [ "$(docker inspect -f '{{.State.Running}}' exam-term 2>/dev/null)" = true ] || die "exam-term not running: sim up"
+  "$SIM_ROOT/bin/exam" daemon-ensure >/dev/null 2>&1
+  exec docker exec -it -u candidate -w /home/candidate exam-term tmux new -A -s exam
+}
+
+case "${1:-help}" in
+  up) shift; cmd_up "$@";;
+  down) shift; cmd_down "${1:-all}";;
+  rebuild) build_images;;
+  status) cmd_status;;
+  doctor) cmd_doctor;;
+  term) cmd_term;;
+  snapshot) shift; snapshot "$@";;
+  restore-node) shift; restore_node "$@";;
+  netpol-test) netpol_test "${2:-k8s}";;
+  recreate) shift; c=$1; [ -n "$c" ] || die "usage: sim recreate <cluster>"; exists_cluster $c && kind delete cluster --name $c >/dev/null 2>&1
+            create_cluster $c; write_admin_kubeconfig; wait_nodes $c; case $c in k8s) addons_common k8s; addons_k8s;; ek8s) addons_common ek8s;; esac; write_term_kubeconfig; snapshot $c;;
+  kubeconfigs) write_admin_kubeconfig; write_term_kubeconfig;;
+  *) cat <<USAGE
+sim up [k8s ek8s ik8s]   create images, clusters, addons, exam-term (default: k8s ek8s)
+sim down [cluster|all]   delete a cluster, or everything the simulator created
+sim status | doctor      show state / run health checks (node Ready, addons, NetworkPolicy, ssh, drift)
+sim term                 open the exam terminal (tmux)
+sim snapshot [cluster]   save baseline of node files (used by exam reset)
+sim recreate <cluster>   delete and rebuild a cluster (hard reset)
+sim rebuild              rebuild the three images
+USAGE
+  ;;
+esac

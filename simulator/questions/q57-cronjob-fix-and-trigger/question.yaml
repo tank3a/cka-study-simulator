@@ -1,0 +1,16 @@
+id: q57-cronjob-fix-and-trigger
+title: Repair a suspended CronJob and trigger a manual run
+domain: workloads
+weight: 5
+difficulty: medium
+context: k8s
+host: null
+namespace: cron-demo
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 8
+artifacts: []
+checks_total: 8
+tags: [cronjob, schedule, suspend, concurrencypolicy, history-limits]

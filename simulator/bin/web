@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# web: CKA study dashboard on http://127.0.0.1:8765 (stdlib python3). Flags: --check, --dry-run, --port N, --ttyd-port N, --no-open
+set -euo pipefail
+SELF="${BASH_SOURCE[0]}"; while [ -L "$SELF" ]; do SELF=$(readlink "$SELF"); done
+ROOT="$(cd "$(dirname "$SELF")/.." && pwd)"
+exec python3 -B "$ROOT/web/server.py" "$@"

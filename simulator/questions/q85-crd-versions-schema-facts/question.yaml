@@ -1,0 +1,19 @@
+id: q85-crd-versions-schema-facts
+title: Read CRD versions and schema, then fix a rejected custom resource
+domain: cluster-architecture
+weight: 5
+difficulty: medium
+context: k8s
+host: null
+namespace: widget-lab
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+conflicts: []
+time_hint_min: 9
+artifacts:
+  - path: /home/candidate/answers/q85.txt
+    on: term
+checks_total: 10
+tags: [crd, versions, storage-version, schema, validation, kubectl-explain, shortnames]

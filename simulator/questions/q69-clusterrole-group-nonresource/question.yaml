@@ -1,0 +1,17 @@
+id: q69-clusterrole-group-nonresource
+title: ClusterRoles for a group, a namespaced reuse and a non-resource URL
+domain: cluster-architecture
+weight: 5
+difficulty: medium
+context: k8s
+host: null
+namespace: cr-a
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+conflicts: []
+time_hint_min: 8
+artifacts: []
+checks_total: 9
+tags: [rbac, clusterrole, clusterrolebinding, group, nonResourceURLs, can-i]

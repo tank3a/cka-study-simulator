@@ -1,0 +1,18 @@
+id: q24-kustomize-overlay-patch
+title: Build a production Kustomize overlay
+domain: cluster-architecture
+weight: 7
+difficulty: medium
+context: k8s
+host: null
+namespace: kz-prod
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 10
+artifacts:
+  - path: /home/candidate/kustomize/overlays/prod/kustomization.yaml
+    on: term
+checks_total: 9
+tags: [kustomize, overlay, patch, configMapGenerator, images, replicas]

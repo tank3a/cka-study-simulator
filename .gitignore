@@ -1,0 +1,11 @@
+# course PDFs (third-party material), macOS junk, python caches
+*.pdf
+.DS_Store
+__pycache__/
+# local runtime state: kubeconfigs, ssh keys, results (also in simulator/.gitignore)
+simulator/state/
+simulator/images/node/authorized_keys
+# ~66 MB of downloaded charts/manifests/debs; rebuilt by images/assets/build-assets.sh
+simulator/assets-cache/
+# pre-existing local kind configs, not part of this project
+kind/

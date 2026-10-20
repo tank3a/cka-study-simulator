@@ -1,0 +1,23 @@
+id: q70-csr-user-certificate
+title: Issue a client certificate for a new user through a CSR
+domain: cluster-architecture
+weight: 6
+difficulty: medium
+context: k8s
+host: null
+namespace: csr-lab
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+conflicts: []
+time_hint_min: 10
+artifacts:
+  - path: /home/candidate/csr/dana.key
+    on: term
+  - path: /home/candidate/csr/dana.csr
+    on: term
+  - path: /home/candidate/csr/dana.crt
+    on: term
+checks_total: 9
+tags: [csr, certificates, openssl, rbac, user]

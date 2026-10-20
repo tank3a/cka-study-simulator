@@ -1,0 +1,22 @@
+id: q105-metrics-server-tls
+title: kubectl top fails - metrics-server not Ready
+domain: troubleshooting
+sub_competency: Monitor cluster and application resource usage
+weight: 6
+difficulty: medium
+context: k8s
+host: null
+namespace: null
+requires: [metrics-server]
+fidelity: medium
+destructive: true
+reset: ns
+time_hint_min: 9
+conflicts: [q50-kubectl-top-usage, q09-hpa-autoscale, q14-topology-spread-hpa, q49-logs-events-crictl, q106-metrics-apiservice-svc]
+artifacts:
+  - path: /home/candidate/q105/nodes.txt
+    on: term
+  - path: /home/candidate/q105/cause.txt
+    on: term
+checks_total: 6
+tags: [metrics-server, apiservice, kubectl-top, kubelet-tls, logs]

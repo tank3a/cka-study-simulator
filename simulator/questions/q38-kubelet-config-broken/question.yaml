@@ -1,0 +1,18 @@
+id: q38-kubelet-config-broken
+title: Worker node NotReady - kubelet will not start
+domain: troubleshooting
+sub_competency: Troubleshoot clusters and nodes
+weight: 7
+difficulty: hard
+context: k8s
+host: k8s-node2
+namespace: kubelet-fix
+requires: []
+fidelity: high
+destructive: true
+reset: cluster-soft
+time_hint_min: 10
+conflicts: [q12-taints-nodeselector, q13-affinity-tolerations-priority, q14-topology-spread-hpa, q53-daemonset-nodeselector-rolling, q67-podaffinity-cross-namespace, q68-topology-spread-taint-policy]  # k8s-worker2 is NotReady while seeded
+artifacts: []
+checks_total: 7
+tags: [node, kubelet, journalctl, kubelet-config]

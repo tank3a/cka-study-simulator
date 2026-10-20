@@ -1,0 +1,18 @@
+id: q26-extension-interfaces-cni-csi-cri
+title: Inspect CRI, CNI and CSI integration and use a RuntimeClass
+domain: cluster-architecture
+weight: 5
+difficulty: medium
+context: k8s
+host: k8s-node1
+namespace: ext-if
+requires: []
+fidelity: partial   # values are kind specific (containerd, kindnet, local-path); RuntimeClass uses the default runc handler only
+destructive: false
+reset: ns
+time_hint_min: 9
+artifacts:
+  - path: /home/candidate/answers/q26.txt
+    on: term
+checks_total: 10
+tags: [cri, cni, csi, runtimeclass, containerd, storageclass, extension-interfaces]

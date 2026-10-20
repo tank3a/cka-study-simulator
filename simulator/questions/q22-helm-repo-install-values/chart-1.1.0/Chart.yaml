@@ -1,0 +1,6 @@
+apiVersion: v2
+name: cka-web
+description: Tiny web chart used by the CKA simulator
+type: application
+version: 1.1.0
+appVersion: "1.27.1"

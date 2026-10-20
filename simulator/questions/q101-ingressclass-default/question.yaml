@@ -1,0 +1,20 @@
+id: q101-ingressclass-default
+title: Create an IngressClass and make it the default
+domain: networking
+weight: 6
+difficulty: medium
+context: k8s
+host: null
+namespace: ing-class
+requires: [ingress]
+fidelity: partial
+destructive: true
+reset: ns
+time_hint_min: 7
+artifacts: []
+checks_total: 6
+tags: [ingress, ingressclass, default-class, controller]
+concept: ingress-controller-ingressclass
+sub_competency: "Know how to use Ingress controllers and Ingress resources"
+doc: https://kubernetes.io/docs/concepts/services-networking/ingress/
+note: "Creates cluster-scoped IngressClass objects; cleanup.sh deletes them. Conflicts with any addon that already installed a default IngressClass (two defaults make Ingress creation fail). No controller is needed: the DefaultIngressClass admission behaviour is graded."

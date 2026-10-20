@@ -1,0 +1,17 @@
+id: q53-daemonset-nodeselector-rolling
+title: Create a DaemonSet for SSD nodes with a rolling update strategy
+domain: workloads
+weight: 5
+difficulty: medium
+context: k8s
+host: null
+namespace: ds-demo
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 9
+artifacts: []
+checks_total: 8
+tags: [daemonset, nodeselector, updatestrategy, hostpath, node-labels]
+conflicts: [q12-taints-nodeselector]  # both set/remove the node label disk=ssd

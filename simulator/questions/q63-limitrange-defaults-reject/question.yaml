@@ -1,0 +1,16 @@
+id: q63-limitrange-defaults-reject
+title: LimitRange defaults and a rejected oversized Pod
+domain: workloads
+weight: 6
+difficulty: medium
+context: k8s
+host: null
+namespace: lr-demo
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 9
+artifacts: []
+checks_total: 9
+tags: [limitrange, defaults, min-max, admission]

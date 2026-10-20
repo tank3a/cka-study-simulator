@@ -1,0 +1,10 @@
+# CKA exam shell
+alias k=kubectl
+export EDITOR=vim KUBE_EDITOR=vim
+export do="--dry-run=client -o yaml" now="--force --grace-period 0"
+source <(kubectl completion bash)
+complete -o default -F __start_kubectl k
+source <(helm completion bash) 2>/dev/null
+export PS1='\[\e[1;32m\]candidate@cka-term\[\e[0m\]:\[\e[1;34m\]\w\[\e[0m\]\$ '
+export ETCDCTL_API=3
+if [ -z "$EXAM_BANNER_SHOWN" ] && [ -t 1 ]; then export EXAM_BANNER_SHOWN=1; echo "CKA simulator terminal. 'exam q' shows the current question, 'exam list' the overview."; fi

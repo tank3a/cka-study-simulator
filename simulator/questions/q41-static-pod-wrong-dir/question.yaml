@@ -1,0 +1,20 @@
+id: q41-static-pod-wrong-dir
+title: Static pod audit-agent does not run
+domain: troubleshooting
+sub_competency: Troubleshoot cluster components
+weight: 5
+difficulty: medium
+context: k8s
+host: k8s-node1
+namespace: static-demo
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 8
+conflicts: []
+artifacts:
+  - path: /etc/kubernetes/manifests/audit-agent.yaml
+    on: k8s-node1
+checks_total: 5
+tags: [static-pod, kubelet, staticPodPath, crictl]

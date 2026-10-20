@@ -1,0 +1,22 @@
+id: q25-crd-inspect-create-cr
+title: Inspect CRDs and create a custom resource
+domain: cluster-architecture
+weight: 6
+difficulty: medium
+context: k8s
+host: null
+namespace: crd-demo
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 9
+artifacts:
+  - path: /home/candidate/answers/q25-crds.txt
+    on: term
+  - path: /home/candidate/answers/q25-explain.txt
+    on: term
+  - path: /home/candidate/answers/q25-count.txt
+    on: term
+checks_total: 8
+tags: [crd, custom-resource, explain, operator, validation]

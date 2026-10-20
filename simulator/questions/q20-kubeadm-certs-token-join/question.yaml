@@ -1,0 +1,22 @@
+id: q20-kubeadm-certs-token-join
+title: Certificate expiry report and worker join token
+domain: cluster-architecture
+weight: 5
+difficulty: medium
+context: ek8s
+host: ek8s-cp
+namespace: null
+requires: []
+fidelity: high    # token/cert tooling is real; the actual join of a new node is not exercised
+destructive: false
+reset: ns
+time_hint_min: 8
+artifacts:
+  - path: /opt/cka/cert-expiry.txt
+    on: ek8s-cp
+  - path: /opt/cka/join-command.txt
+    on: ek8s-cp
+  - path: /opt/cka/apiserver-sans.txt
+    on: ek8s-cp
+checks_total: 6
+tags: [kubeadm, certs, token, join, openssl]

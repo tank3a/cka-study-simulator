@@ -1,0 +1,20 @@
+id: q37-kubelet-stopped
+title: Worker node NotReady - kubelet stopped
+domain: troubleshooting
+sub_competency: Troubleshoot clusters and nodes
+weight: 6
+difficulty: easy
+context: ek8s
+host: ek8s-node1
+namespace: null
+requires: []
+fidelity: high
+destructive: true
+reset: cluster-soft
+time_hint_min: 6
+conflicts: [q39-apiserver-flags-broken]   # q39 takes the ek8s API down; do not put both in one set
+artifacts:
+  - path: /home/candidate/q37/notready-node.txt
+    on: term
+checks_total: 6
+tags: [node, kubelet, systemctl, journalctl]

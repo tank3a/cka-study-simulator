@@ -1,0 +1,19 @@
+id: q84-kustomize-fix-overlay-secretgen
+title: Repair a broken Kustomize overlay and add a secretGenerator
+domain: cluster-architecture
+weight: 6
+difficulty: medium
+context: k8s
+host: null
+namespace: kz-dev
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+conflicts: []
+time_hint_min: 9
+artifacts:
+  - path: /home/candidate/kz2/overlays/dev/kustomization.yaml
+    on: term
+checks_total: 8
+tags: [kustomize, overlay, secretGenerator, patches, namePrefix, troubleshooting]

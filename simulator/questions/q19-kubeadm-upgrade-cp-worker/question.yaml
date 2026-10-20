@@ -1,0 +1,16 @@
+id: q19-kubeadm-upgrade-cp-worker
+title: Upgrade control plane and worker with kubeadm
+domain: cluster-architecture
+weight: 8
+difficulty: hard
+context: ik8s
+host: ik8s-cp
+namespace: null
+requires: [ik8s]
+fidelity: partial   # verified on live ik8s (lane I): real kubeadm upgrade 1.34 -> 1.35.9 works on kind; setup installs offline Calico so preflight passes
+destructive: true
+reset: cluster-hard
+time_hint_min: 15
+artifacts: []
+checks_total: 7 # grade.sh weights sum to 10 points
+tags: [kubeadm, upgrade, drain, kubelet, apt]

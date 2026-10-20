@@ -1,0 +1,18 @@
+id: q47-netpol-egress-dns
+title: Egress policy breaks name resolution
+domain: troubleshooting
+sub_competency: Troubleshoot services and networking
+weight: 6
+difficulty: medium
+context: k8s
+host: null
+namespace: egress-dns
+requires: []
+fidelity: high            # needs NetworkPolicy enforcement
+destructive: false
+reset: ns
+time_hint_min: 9
+conflicts: [q46-coredns-corefile]
+artifacts: []
+checks_total: 6
+tags: [networkpolicy, egress, dns, kube-system]

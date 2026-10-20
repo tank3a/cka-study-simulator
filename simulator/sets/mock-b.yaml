@@ -1,0 +1,19 @@
+name: mock-b
+duration_min: 120
+questions:
+  - q04-expand-pvc
+  - q105-metrics-server-tls
+  - q108-scheduler-flags-probe
+  - q27-svc-nodeport-expose
+  - q34-ingress-tls-paths
+  - q45-netpol-ingress-chain
+  - q47-netpol-egress-dns
+  - q51-pvc-expand-two-classes
+  - q55-statefulset-partition-retention
+  - q58-pdb-percent-allowed
+  - q61-vpa-recommend-only
+  - q69-clusterrole-group-nonresource
+  - q74-kubeadm-config-fix-migrate
+  - q85-crd-versions-schema-facts
+  - q90-csi-driver-storageclass-objects
+  - q96-kube-proxy-mode-rules

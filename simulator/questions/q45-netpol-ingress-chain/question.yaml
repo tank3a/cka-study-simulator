@@ -1,0 +1,18 @@
+id: q45-netpol-ingress-chain
+title: NetworkPolicy blocks the web-api-db chain
+domain: troubleshooting
+sub_competency: Troubleshoot services and networking
+weight: 7
+difficulty: medium
+context: k8s
+host: null
+namespace: shop-np
+requires: []
+fidelity: high            # needs NetworkPolicy enforcement (kindnet self-test must have passed)
+destructive: false
+reset: ns
+time_hint_min: 10
+conflicts: []
+artifacts: []
+checks_total: 7
+tags: [networkpolicy, ingress, labels, namespaceSelector]

@@ -1,0 +1,18 @@
+id: q108-scheduler-flags-probe
+title: Pods Pending - scheduler flag typo and secure-port
+domain: troubleshooting
+sub_competency: Troubleshoot cluster components
+weight: 7
+difficulty: medium
+context: ek8s
+host: ek8s-cp
+namespace: sched-flags
+requires: []
+fidelity: high
+destructive: true
+reset: cluster-soft
+time_hint_min: 10
+conflicts: [q37-kubelet-stopped, q39-apiserver-flags-broken, q40-scheduler-down, q103-controller-manager-crash, q104-controller-manager-disabled, q107-apiserver-authz-keyfile]
+artifacts: []
+checks_total: 6
+tags: [control-plane, kube-scheduler, static-pod, probes, flags]

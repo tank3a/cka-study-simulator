@@ -1,0 +1,19 @@
+id: q94-headless-service-dns
+title: Headless Service and per-Pod DNS records
+domain: networking
+weight: 6
+difficulty: medium
+context: k8s
+host: null
+namespace: hl-dns
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 8
+artifacts: []
+checks_total: 8
+tags: [service, headless, dns, statefulset]
+concept: headless-externalname
+sub_competency: "Use ClusterIP, NodePort, LoadBalancer service types and endpoints; Understand and use CoreDNS"
+doc: https://kubernetes.io/docs/concepts/services-networking/service/

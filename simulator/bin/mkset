@@ -1,0 +1,65 @@
+#!/usr/bin/env python3
+"""mkset <name> [seed]: compose sets/<name>.yaml (16 tasks, CKA domain mix) from questions/*/question.yaml.
+Avoids two destructive questions on the same node/host and any ik8s question (put those in a set by hand).
+Honors every question.yaml `conflicts:` (symmetric) plus the consolidated rules in questions/INDEX.md (RULES below);
+skipped candidates are reported on stderr. Ordering: q18/q80 (etcd restore) go last."""
+import os, sys, random, re
+root = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
+qd = os.path.join(root, 'questions'); name = sys.argv[1]; random.seed(sys.argv[2] if len(sys.argv) > 2 else name)
+def meta(d):
+    m = {}
+    for l in open(os.path.join(qd, d, 'question.yaml')):
+        k = re.match(r'^(\w+):\s*(.*?)\s*(#.*)?$', l)
+        if k: m[k.group(1)] = k.group(2).strip('"\'')
+    return m
+bank = {}
+for d in sorted(os.listdir(qd)):
+    if re.match(r'q\d+', d) and d != 'q00-smoke' and os.path.exists(os.path.join(qd, d, 'question.yaml')): bank[d] = meta(d)
+want = {'cluster-architecture': 4, 'workloads': 3, 'networking': 3, 'storage': 2, 'troubleshooting': 4}
+dom = lambda m: m.get('domain', '').lower().replace(' & ', '-').replace(' ', '-').split(',')[0]
+qid = lambda q: re.match(r'(q\d+)', q).group(1)
+def listfield(d):
+    for l in open(os.path.join(qd, d, 'question.yaml')):
+        k = re.match(r'^conflicts:\s*\[(.*?)\]', l)
+        if k: return [qid(x.strip()) for x in k.group(1).split(',') if x.strip()]
+    return []
+LAST = {'q18', 'q80'}                       # etcd restore questions: placed last
+BEFORE = {'q17', 'q20', 'q21', 'q75', 'q79'}  # must be graded before q18/q80: ordering, not exclusion
+bad = set()                                  # frozenset pairs
+def add(a, b):
+    if a != b: bad.add(frozenset((a, b)))
+for d in bank:
+    for c in listfield(d): add(qid(d), c)
+def clique(*g):
+    for a in g:
+        for b in g: add(a, b)
+def cross(A, B):
+    for a in A:
+        for b in B: add(a, b)
+# INDEX.md consolidated hard conflicts
+cross(['q39'], ['q37', 'q40']); cross(['q18'], ['q80'])
+clique('q103', 'q104', 'q107', 'q108'); cross(['q103', 'q104', 'q107', 'q108'], ['q37', 'q39', 'q40'])
+cross(['q76'], ['q39', 'q40'])
+clique('q105', 'q106'); cross(['q105', 'q106'], ['q09', 'q14', 'q49', 'q50'])
+cross(['q46'], ['q44', 'q47', 'q48', 'q94', 'q95', 'q97'])
+clique('q88', 'q89', 'q19'); clique('q19', 'q88', 'q89')
+for a in LAST:
+    for b in BEFORE: bad.discard(frozenset((a, b)))   # allowed when q18/q80 come last
+ONE_PER_SET = {'q19', 'q88', 'q89'}          # ik8s questions: at most one (and excluded from random picks anyway)
+pick, hosts, skipped = [], set(), []
+for dname, n in want.items():
+    c = [q for q, m in bank.items() if dname.split('-')[0] in dom(m) and m.get('context') != 'ik8s']
+    random.shuffle(c); got = 0
+    for q in c:
+        h = bank[q].get('host') or ''
+        clash = [p for p in pick if frozenset((qid(q), qid(p))) in bad]
+        if clash: skipped.append((q, clash)); continue
+        if bank[q].get('destructive') == 'true' and h in hosts: continue
+        if bank[q].get('destructive') == 'true': hosts.add(h)
+        pick.append(q); got += 1
+        if got == n: break
+pick.sort(key=lambda q: (qid(q) in LAST, q))
+for q, c in skipped: sys.stderr.write('skipped %s: conflicts with %s\n' % (q, ', '.join(c)))
+with open(os.path.join(root, 'sets', name + '.yaml'), 'w') as f:
+    f.write('name: %s\nduration_min: 120\nquestions:\n' % name + ''.join('  - %s\n' % q for q in pick))
+print('\n'.join(pick))

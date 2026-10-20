@@ -1,0 +1,19 @@
+id: q91-runtimeclass-overhead-scheduling
+title: RuntimeClass with pod overhead and node scheduling, used by a Deployment
+domain: cluster-architecture
+weight: 4
+difficulty: medium
+context: k8s
+host: k8s-node1
+namespace: rc-lab
+requires: []
+fidelity: partial   # only the runc handler exists on kind, so the class is functionally identical to the default; overhead and scheduling fields are real
+destructive: false
+reset: ns
+conflicts: [q78]   # setup labels node k8s-worker with runtime=sandbox; q78 drains k8s-worker2 and expects web Pods on k8s-worker (no taint is added, so both can coexist)
+time_hint_min: 9
+artifacts:
+  - path: /home/candidate/answers/q91-handlers.txt
+    on: term
+checks_total: 9
+tags: [cri, runtimeclass, overhead, scheduling, nodeSelector, containerd]

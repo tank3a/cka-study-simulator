@@ -1,0 +1,21 @@
+id: q82-helm-select-version-by-appversion
+title: Pick a chart version by appVersion and install it with an override
+domain: cluster-architecture
+weight: 5
+difficulty: medium
+context: k8s
+host: null
+namespace: helm-notes
+requires: [helm-repo]
+fidelity: high
+destructive: false
+reset: ns
+conflicts: []   # uses repo name `platform`; q22 uses `cka-charts` (q22 setup removes only its own repo name)
+time_hint_min: 8
+artifacts:
+  - path: /home/candidate/answers/q82-version.txt
+    on: term
+  - path: /home/candidate/answers/q82-values.yaml
+    on: term
+checks_total: 7
+tags: [helm, repo, search, versions, show-values, install]

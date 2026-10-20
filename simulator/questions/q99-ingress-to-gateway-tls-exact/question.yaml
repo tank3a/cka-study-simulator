@@ -1,0 +1,20 @@
+id: q99-ingress-to-gateway-tls-exact
+title: Migrate a TLS Ingress with Exact paths to Gateway API
+domain: networking
+weight: 8
+difficulty: hard
+context: k8s
+host: null
+namespace: mig-tls
+requires: [gateway-api]
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 12
+artifacts: []
+checks_total: 9
+tags: [gateway-api, ingress, migration, tls, httproute, pathtype]
+concept: ingress-gateway-migration
+sub_competency: "Use the Gateway API to manage Ingress traffic; Know how to use Ingress controllers and Ingress resources"
+doc: https://gateway-api.sigs.k8s.io/guides/user-guides/http-routing/
+note: "Assumes GatewayClass nginx. The Ingress is only read as an API object (no Ingress controller needed)."

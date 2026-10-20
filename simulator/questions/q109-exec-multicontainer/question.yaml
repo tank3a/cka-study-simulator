@@ -1,0 +1,24 @@
+id: q109-exec-multicontainer
+title: Inspect a two-container Pod with kubectl exec
+domain: troubleshooting
+sub_competency: Manage and evaluate container output streams
+weight: 5
+difficulty: easy
+context: k8s
+host: null
+namespace: exec-lab
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 7
+conflicts: []
+artifacts:
+  - path: /home/candidate/q109/region.txt
+    on: term
+  - path: /home/candidate/q109/denied-count.txt
+    on: term
+  - path: /home/candidate/q109/title.txt
+    on: term
+checks_total: 6
+tags: [kubectl-exec, multi-container, shared-network, debugging]

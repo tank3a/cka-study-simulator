@@ -1,0 +1,25 @@
+id: q36-dns-pod-network-debug
+title: Pod cannot resolve names and CNI inventory
+domain: troubleshooting
+weight: 6
+difficulty: medium
+context: k8s
+host: k8s-node1
+namespace: net-debug
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 9
+artifacts:
+  - path: /home/candidate/podcidr-node1.txt
+    on: term
+  - path: /home/candidate/cni-conf.txt
+    on: term
+  - path: /home/candidate/dns-ip.txt
+    on: term
+checks_total: 7
+tags: [coredns, dns, dnsPolicy, cni, pod-cidr, connectivity]
+concept: coredns+pod-connectivity-cni
+sub_competency: "Understand and use CoreDNS; understand connectivity between Pods; extension interfaces (CNI)"
+doc: https://kubernetes.io/docs/tasks/administer-cluster/dns-debugging-resolution/

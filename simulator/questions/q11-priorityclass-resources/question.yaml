@@ -1,0 +1,16 @@
+id: q11-priorityclass-resources
+title: Create a PriorityClass and set resource requests and limits
+domain: workloads
+weight: 6
+difficulty: medium
+context: k8s
+host: null
+namespace: prio-demo
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 8
+artifacts: []
+checks_total: 9
+tags: [priorityclass, resources, requests, limits, scheduling]

@@ -1,0 +1,16 @@
+id: q01-pv-pvc-deployment
+title: Create a PV, a PVC and a Deployment that mounts it
+domain: storage
+weight: 6
+difficulty: easy
+context: k8s
+host: null
+namespace: data-app
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 6
+artifacts: []
+checks_total: 11
+tags: [pv, pvc, hostpath, deployment, volumes]

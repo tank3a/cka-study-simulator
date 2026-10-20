@@ -1,0 +1,16 @@
+id: q05-volume-types-block
+title: Configure emptyDir, hostPath, configMap volumes and a raw block claim
+domain: storage
+weight: 6
+difficulty: medium
+context: k8s
+host: null
+namespace: vol-demo
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 9
+artifacts: []
+checks_total: 11
+tags: [volumes, emptydir, hostpath, configmap, volumemode, block, multi-container, sidecar]

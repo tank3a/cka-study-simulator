@@ -1,0 +1,16 @@
+id: q10-native-sidecar
+title: Add a native sidecar container to a Deployment
+domain: workloads
+weight: 6
+difficulty: hard
+context: k8s
+host: null
+namespace: sidecar-demo
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 9
+artifacts: []
+checks_total: 9
+tags: [sidecar, init-containers, restartpolicy-always, emptydir, configmap, logging]

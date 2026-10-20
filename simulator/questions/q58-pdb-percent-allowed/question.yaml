@@ -1,0 +1,16 @@
+id: q58-pdb-percent-allowed
+title: Protect a Deployment with a PodDisruptionBudget and read allowed disruptions
+domain: workloads
+weight: 4
+difficulty: easy
+context: k8s
+host: null
+namespace: pdb-a
+requires: []
+fidelity: high
+destructive: false
+reset: ns
+time_hint_min: 5
+artifacts: []
+checks_total: 6
+tags: [poddisruptionbudget, minavailable]

@@ -1,0 +1,16 @@
+id: q61-vpa-recommend-only
+title: Create a VerticalPodAutoscaler in recommendation-only mode with bounds
+domain: workloads
+weight: 5
+difficulty: medium
+context: k8s
+host: null
+namespace: vpa-a
+requires: []
+fidelity: low
+destructive: false
+reset: ns
+time_hint_min: 7
+artifacts: []
+checks_total: 7
+tags: [vpa, updatemode, resourcepolicy, minallowed, maxallowed]

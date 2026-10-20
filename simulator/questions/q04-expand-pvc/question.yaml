@@ -1,0 +1,16 @@
+id: q04-expand-pvc
+title: Expand a PersistentVolumeClaim
+domain: storage
+weight: 4
+difficulty: medium
+context: k8s
+host: null
+namespace: expand-demo
+requires: []
+fidelity: partial
+destructive: false
+reset: ns
+time_hint_min: 5
+artifacts: []
+checks_total: 4
+tags: [pvc, storageclass, allowvolumeexpansion]
